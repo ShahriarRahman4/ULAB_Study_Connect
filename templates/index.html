@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+{% block title %}ULAB StudyConnect — Your academic hub{% endblock %}
+{% block content %}
+<section class="hero-ecosystem" aria-labelledby="hero-heading">
+  <div class="hero-ambient" aria-hidden="true">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+    <div class="hero-mesh"></div>
+  </div>
+
+  <div class="hero-ecosystem-inner">
+    <div class="hero-ecosystem-grid">
+
+      <div class="hero-ecosystem-copy">
+        <div class="hero-announce reveal">
+          <span class="hero-announce-pulse" aria-hidden="true"></span>
+          <i class="fa-solid fa-sparkles" aria-hidden="true"></i>
+          <span>ULAB Hackathon 2026 · Built for ULAB students</span>
+        </div>
+
+        <h1 id="hero-heading" class="hero-headline reveal reveal-delay-1">
+          <span class="hero-line hero-line-light">Where ULAB students</span>
+          <span class="hero-line hero-line-bold">study, connect</span>
+          <span class="hero-line hero-line-gradient">&amp; grow together.</span>
+        </h1>
+
+        <p class="hero-desc reveal reveal-delay-2">
+          Exam routines, AI-assisted notes, smart study planning, and peer collaboration — one premium academic community platform built exclusively for ULAB.
+        </p>
+
+        <div class="hero-cta-row reveal reveal-delay-3">
+          <a href="{% url 'users:register' %}" class="btn-hero-primary">
+            <span class="btn-hero-shine" aria-hidden="true"></span>
+            <i class="fa-solid fa-rocket" aria-hidden="true"></i>
+            <span>Join StudyConnect</span>
+          </a>
+          <a href="{% url 'notes:public_notes' %}" class="btn-hero-secondary">
+            <i class="fa-solid fa-compass" aria-hidden="true"></i>
+            <span>Explore resources</span>
+          </a>
+        </div>
+
+        <div class="hero-trust reveal reveal-delay-3" role="list" aria-label="Platform highlights">
+          <div class="hero-trust-item" role="listitem">
+            <strong>1,240</strong>
+            <span>Active students</span>
+          </div>
+          <div class="hero-trust-divider" aria-hidden="true"></div>
+          <div class="hero-trust-item" role="listitem">
+            <strong>3,580</strong>
+            <span>Notes shared</span>
+          </div>
+          <div class="hero-trust-divider" aria-hidden="true"></div>
+          <div class="hero-trust-item" role="listitem">
+            <strong>890</strong>
+            <span>Forum threads</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-scene-container reveal reveal-delay-2">
+        <div class="hero-scene" id="hero-scene" aria-hidden="true">
+          <div class="hero-scene-stage" id="hero-scene-stage">
+
+            <div class="hero-hub">
+              <div class="hero-hub-glow"></div>
+              <div class="hero-hub-ring hero-hub-ring-outer"></div>
+              <div class="hero-hub-ring hero-hub-ring-inner"></div>
+              <div class="hero-hub-core">
+                <span class="hero-hub-icon"><i class="fa-solid fa-graduation-cap"></i></span>
+                <span class="hero-hub-label">StudyConnect</span>
+                <span class="hero-hub-sub">ULAB</span>
+              </div>
+            </div>
+
+            <svg class="hero-connections" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="200" y1="200" x2="80" y2="90" stroke="url(#conn-grad)" stroke-width="1" stroke-dasharray="4 6" opacity="0.5"/>
+              <line x1="200" y1="200" x2="320" y2="100" stroke="url(#conn-grad)" stroke-width="1" stroke-dasharray="4 6" opacity="0.5"/>
+              <line x1="200" y1="200" x2="340" y2="260" stroke="url(#conn-grad)" stroke-width="1" stroke-dasharray="4 6" opacity="0.5"/>
+              <line x1="200" y1="200" x2="70" y2="280" stroke="url(#conn-grad)" stroke-width="1" stroke-dasharray="4 6" opacity="0.5"/>
+              <line x1="200" y1="200" x2="200" y2="50" stroke="url(#conn-grad)" stroke-width="1" stroke-dasharray="4 6" opacity="0.35"/>
+              <defs>
+                <linearGradient id="conn-grad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#4f46e5"/>
+                  <stop offset="100%" stop-color="#06b6d4"/>
+                </linearGradient>
+              </defs>
+            </svg>
+
+            <a href="{% url 'notes:public_notes' %}" class="hero-float-card hero-card-resources">
+              <span class="hero-card-icon" style="background:rgba(16,185,129,0.15);color:#059669;"><i class="fa-solid fa-book-open"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">Study Resources</span>
+                <span class="hero-card-meta">Public notes gallery</span>
+              </span>
+              <span class="hero-card-badge">New</span>
+            </a>
+
+            <a href="{% url 'forum:feed' %}" class="hero-float-card hero-card-forum">
+              <span class="hero-card-icon" style="background:rgba(139,92,246,0.15);color:#7c3aed;"><i class="fa-solid fa-comments"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">CSE 310 Discussion</span>
+                <span class="hero-card-meta">5 new replies</span>
+              </span>
+            </a>
+
+            <a href="{% url 'planner:study_planner' %}" class="hero-float-card hero-card-planner">
+              <span class="hero-card-icon" style="background:rgba(79,70,229,0.15);color:#4f46e5;"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">Study Planner</span>
+                <span class="hero-card-meta">Finals prep ready</span>
+              </span>
+            </a>
+
+            <a href="{% url 'routines:routine_list' %}" class="hero-float-card hero-card-event">
+              <span class="hero-card-icon" style="background:rgba(249,115,22,0.15);color:#ea580c;"><i class="fa-solid fa-calendar-day"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">Summer 2026 Finals</span>
+                <span class="hero-card-meta">Exam routine live</span>
+              </span>
+            </a>
+
+            <a href="{% url 'notes:summarize' %}" class="hero-float-card hero-card-ai">
+              <span class="hero-card-icon" style="background:rgba(6,182,212,0.15);color:#0891b2;"><i class="fa-solid fa-brain"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">AI Study Assistant</span>
+                <span class="hero-card-meta">Summarize &amp; quiz</span>
+              </span>
+            </a>
+
+            <div class="hero-avatar-orbit">
+              <div class="hero-avatar hero-avatar-1" title="Student">SR</div>
+              <div class="hero-avatar hero-avatar-2" title="Student">TT</div>
+              <div class="hero-avatar hero-avatar-3" title="Student">AA</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="hero-satellite hero-satellite-online" aria-hidden="true">
+          <span class="hero-sat-dot"></span>
+          <span>24 students online</span>
+        </div>
+        <div class="hero-satellite hero-satellite-exams" aria-hidden="true">
+          <i class="fa-solid fa-bolt"></i>
+          <span>5 exams tracked</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="page-wrap">
+
+<!-- PLATFORM FEATURES -->
+<section class="home-section home-features reveal" aria-labelledby="features-heading">
+  <div class="home-section-header">
+    <span class="section-label"><i class="fa-solid fa-layer-group"></i> Platform</span>
+    <h2 id="features-heading" class="home-section-title">Everything you need to<br><span class="text-gradient">excel this semester</span></h2>
+    <p class="home-section-desc">Purpose-built tools that keep your academic life organized — so you can focus on learning, not logistics.</p>
+  </div>
+
+  <div class="features-bento">
+    <a href="{% url 'routines:routine_list' %}" class="feature-card feature-card-lg reveal">
+      <div class="feature-card-glow" aria-hidden="true"></div>
+      <div class="feature-card-top">
+        <span class="feature-card-icon" style="--fc:#4f46e5;--fc-bg:rgba(79,70,229,0.12);"><i class="fa-solid fa-calendar-days"></i></span>
+        <span class="feature-card-tag">Official schedules</span>
+      </div>
+      <h3 class="feature-card-title">Exam Routines</h3>
+      <p class="feature-card-desc">Browse official ULAB exam schedules, filter by your courses, save personalized routines, and sync with your study planner.</p>
+      <span class="feature-card-link">Explore routines <i class="fa-solid fa-arrow-right"></i></span>
+    </a>
+
+    <a href="{% url 'planner:study_planner' %}" class="feature-card feature-card-lg feature-card-featured reveal reveal-delay-1">
+      <div class="feature-card-glow" aria-hidden="true"></div>
+      <div class="feature-card-top">
+        <span class="feature-card-icon" style="--fc:#0891b2;--fc-bg:rgba(6,182,212,0.12);"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+        <span class="feature-card-tag">AI-powered</span>
+      </div>
+      <h3 class="feature-card-title">Smart Study Planner</h3>
+      <p class="feature-card-desc">Algorithm-driven schedules that adapt to exam dates, course difficulty, and your daily study capacity.</p>
+      <span class="feature-card-link">Start planning <i class="fa-solid fa-arrow-right"></i></span>
+    </a>
+
+    <a href="{% url 'notes:public_notes' %}" class="feature-card reveal">
+      <div class="feature-card-glow" aria-hidden="true"></div>
+      <div class="feature-card-top">
+        <span class="feature-card-icon" style="--fc:#059669;--fc-bg:rgba(16,185,129,0.12);"><i class="fa-solid fa-book-open"></i></span>
+      </div>
+      <h3 class="feature-card-title">Notes &amp; PDFs</h3>
+      <p class="feature-card-desc">Upload, summarize, quiz yourself, and discover peer resources.</p>
+      <span class="feature-card-link">Browse notes <i class="fa-solid fa-arrow-right"></i></span>
+    </a>
+
+    <a href="{% url 'forum:feed' %}" class="feature-card reveal reveal-delay-1">
+      <div class="feature-card-glow" aria-hidden="true"></div>
+      <div class="feature-card-top">
+        <span class="feature-card-icon" style="--fc:#7c3aed;--fc-bg:rgba(139,92,246,0.12);"><i class="fa-solid fa-comments"></i></span>
+      </div>
+      <h3 class="feature-card-title">Community Forum</h3>
+      <p class="feature-card-desc">Ask questions, share insights, and learn together with fellow ULABians.</p>
+      <span class="feature-card-link">Join discussion <i class="fa-solid fa-arrow-right"></i></span>
+    </a>
+
+    <a href="{% url 'notes:summarize' %}" class="feature-card feature-card-dark reveal reveal-delay-2">
+      <div class="feature-card-glow" aria-hidden="true"></div>
+      <div class="feature-card-top">
+        <span class="feature-card-icon" style="--fc:#fff;--fc-bg:rgba(255,255,255,0.15);"><i class="fa-solid fa-brain"></i></span>
+        <span class="feature-card-tag feature-card-tag-light">AI</span>
+      </div>
+      <h3 class="feature-card-title">Summaries &amp; Quizzes</h3>
+      <p class="feature-card-desc">Turn your notes into study aids instantly with AI-powered tools.</p>
+      <span class="feature-card-link">Try AI tools <i class="fa-solid fa-arrow-right"></i></span>
+    </a>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="home-section home-steps reveal" aria-labelledby="steps-heading">
+  <div class="home-section-header home-section-header-row">
+    <div>
+      <span class="section-label"><i class="fa-solid fa-route"></i> How it works</span>
+      <h2 id="steps-heading" class="home-section-title home-section-title-sm">Three steps to a<br>smarter semester</h2>
+    </div>
+    <p class="home-section-desc home-section-desc-left">From sign-up to study plan in minutes. No complexity — just tools that work.</p>
+  </div>
+
+  <div class="steps-grid">
+    <div class="step-card reveal">
+      <div class="step-number">01</div>
+      <div class="step-icon"><i class="fa-solid fa-user-plus"></i></div>
+      <h3 class="step-title">Create your account</h3>
+      <p class="step-desc">Sign up and set up your student profile in under a minute.</p>
+      <a href="{% url 'users:register' %}" class="step-link">Register free <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <div class="step-connector" aria-hidden="true"><i class="fa-solid fa-chevron-right"></i></div>
+    <div class="step-card reveal reveal-delay-1">
+      <div class="step-number">02</div>
+      <div class="step-icon"><i class="fa-solid fa-calendar-check"></i></div>
+      <h3 class="step-title">Import your routine</h3>
+      <p class="step-desc">Browse official exam schedules and save your courses.</p>
+      <a href="{% url 'routines:routine_list' %}" class="step-link">View routines <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+    <div class="step-connector" aria-hidden="true"><i class="fa-solid fa-chevron-right"></i></div>
+    <div class="step-card reveal reveal-delay-2">
+      <div class="step-number">03</div>
+      <div class="step-icon"><i class="fa-solid fa-people-group"></i></div>
+      <h3 class="step-title">Study &amp; connect</h3>
+      <p class="step-desc">Generate plans, share notes, and collaborate with peers.</p>
+      <a href="{% url 'forum:feed' %}" class="step-link">Explore community <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- COMMUNITY ACTIVITY -->
+<section class="home-section home-activity reveal" aria-labelledby="activity-heading">
+  <div class="activity-shell">
+    <div class="activity-copy">
+      <span class="section-label activity-label"><i class="fa-solid fa-signal"></i> Live activity</span>
+      <h2 id="activity-heading" class="home-section-title activity-title">A thriving student<br>community at ULAB</h2>
+      <p class="activity-desc">Real students sharing notes, discussing courses, and helping each other succeed — every single day.</p>
+      <div class="activity-stats">
+        <div class="activity-stat"><strong>890</strong><span>Forum threads</span></div>
+        <div class="activity-stat"><strong>3,580</strong><span>Notes shared</span></div>
+        <div class="activity-stat"><strong>42</strong><span>Exam routines</span></div>
+      </div>
+      <a href="{% url 'forum:feed' %}" class="btn-hero-primary activity-cta"><i class="fa-solid fa-comments"></i><span>Join the conversation</span></a>
+    </div>
+
+    <div class="activity-feed">
+      <a href="{% url 'forum:feed' %}" class="activity-item reveal">
+        <div class="activity-avatar" style="background:linear-gradient(135deg,#4f46e5,#6366f1);">TT</div>
+        <div class="activity-body">
+          <div class="activity-meta"><span class="badge badge-amber">Question</span><span>CSE · Algorithms</span></div>
+          <p class="activity-text">How do I analyze merge sort time complexity?</p>
+          <span class="activity-time">Tanim · 2 hours ago · 5 replies</span>
+        </div>
+      </a>
+      <a href="{% url 'notes:public_notes' %}" class="activity-item reveal reveal-delay-1">
+        <div class="activity-avatar" style="background:linear-gradient(135deg,#059669,#10b981);">SR</div>
+        <div class="activity-body">
+          <div class="activity-meta"><span class="badge badge-cyan">Note</span><span>CSE 310</span></div>
+          <p class="activity-text">Week 4 — Recursion patterns &amp; base cases</p>
+          <span class="activity-time">Shahriar · Updated today</span>
+        </div>
+      </a>
+      <a href="{% url 'planner:study_planner' %}" class="activity-item reveal reveal-delay-2">
+        <div class="activity-avatar" style="background:linear-gradient(135deg,#0891b2,#06b6d4);">AA</div>
+        <div class="activity-body">
+          <div class="activity-meta"><span class="badge badge-indigo">Planner</span><span>Finals prep</span></div>
+          <p class="activity-text">Generated a 12-day study schedule for 4 courses</p>
+          <span class="activity-time">Atique · Yesterday</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="home-section home-cta reveal" aria-labelledby="cta-heading">
+  <div class="home-cta-card">
+    <div class="home-cta-ambient" aria-hidden="true">
+      <div class="home-cta-orb home-cta-orb-1"></div>
+      <div class="home-cta-orb home-cta-orb-2"></div>
+    </div>
+    <div class="home-cta-content">
+      <span class="section-label"><i class="fa-solid fa-rocket"></i> Get started</span>
+      <h2 id="cta-heading" class="home-cta-title">Ready to transform<br>your semester?</h2>
+      <p class="home-cta-desc">Join ULAB students already using StudyConnect. Free for all students — no credit card required.</p>
+      <div class="home-cta-actions">
+        <a href="{% url 'users:register' %}" class="btn-hero-primary">
+          <span class="btn-hero-shine" aria-hidden="true"></span>
+          <i class="fa-solid fa-rocket"></i>
+          <span>Create free account</span>
+        </a>
+        <a href="{% url 'users:login' %}" class="btn-hero-secondary">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i>
+          <span>Sign in</span>
+        </a>
+      </div>
+    </div>
+    <div class="home-cta-visual" aria-hidden="true">
+      <div class="home-cta-orbit">
+        <div class="home-cta-orbit-item" style="--i:0;"><i class="fa-solid fa-book-open"></i></div>
+        <div class="home-cta-orbit-item" style="--i:1;"><i class="fa-solid fa-calendar-days"></i></div>
+        <div class="home-cta-orbit-item" style="--i:2;"><i class="fa-solid fa-comments"></i></div>
+        <div class="home-cta-orbit-item" style="--i:3;"><i class="fa-solid fa-brain"></i></div>
+        <div class="home-cta-orbit-core"><i class="fa-solid fa-graduation-cap"></i></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+  </div>
+{% endblock %}

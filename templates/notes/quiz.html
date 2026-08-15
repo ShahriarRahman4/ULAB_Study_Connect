@@ -1,88 +1,46 @@
-{% extends 'base.html' %}
-
-{% block title %}Quiz Generator - Notes{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Quiz — ULAB StudyConnect{% endblock %}
 {% block content %}
-<a href="{% url 'notes:note_list' %}" class="btn btn-secondary btn-sm mb-2">← Back to Notes</a>
+<div class="notes-hub-page">
+  <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
+    <a href="{% url 'notes:note_list' %}">My notes</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <a href="{% url 'notes:public_notes' %}">Week 4 — Recursion</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <span class="breadcrumb-current">Practice quiz</span>
+  </nav>
 
-<h1 class="section-title">Quiz Generator</h1>
-<p class="muted mb-3">Generate MCQs and short-answer questions from your notes or pasted text.</p>
+  <div class="pdf-upload-hero reveal">
+    <div class="pdf-upload-hero-bg" aria-hidden="true"></div>
+    <div class="pdf-upload-hero-inner">
+      <div>
+        <span class="section-label"><i class="fa-solid fa-circle-question"></i> Quiz</span>
+        <h1 class="pdf-upload-title">Practice quiz</h1>
+        <p class="pdf-upload-desc">Test your understanding of Week 4 — Recursion. Demo check stays on this page.</p>
+      </div>
+    </div>
+  </div>
 
-<div class="card">
-    <h2 class="card-title">Choose Source Material</h2>
-    <form method="post">
-        {% csrf_token %}
-        <div class="grid grid-3">
-            <div class="form-group">
-                <label class="form-label">Select Note (optional)</label>
-                <select name="note_id" class="select">
-                    <option value="">-- Paste text --</option>
-                    {% for n in notes %}
-                        <option value="{{ n.id }}">{{ n.title }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Select PDF (optional)</label>
-                <select name="pdf_id" class="select">
-                    <option value="">-- None --</option>
-                    {% for p in pdfs %}
-                        <option value="{{ p.id }}">{{ p.title }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="form-group" style="align-self:flex-end;">
-                <button type="submit" class="btn btn-primary" style="width:100%;">❓ Generate Quiz</button>
-            </div>
-        </div>
-        <div class="form-group">
-            <label class="form-label">Or paste text directly:</label>
-            {{ form.text }}
-        </div>
-    </form>
-    {% if source_preview %}
-        <p class="muted" style="font-size:0.85rem;">Source preview: {{ source_preview }}...</p>
-    {% endif %}
+  <form id="quiz-form" class="quiz-panel reveal">
+    <fieldset class="quiz-q">
+      <legend>1. What stops a recursive function from calling itself forever?</legend>
+      <label class="quiz-option"><input type="radio" name="q1" value="a"> A loop counter</label>
+      <label class="quiz-option"><input type="radio" name="q1" value="b"> The base case</label>
+      <label class="quiz-option"><input type="radio" name="q1" value="c"> Garbage collection</label>
+    </fieldset>
+    <fieldset class="quiz-q">
+      <legend>2. Naive recursive Fibonacci is slow because it…</legend>
+      <label class="quiz-option"><input type="radio" name="q2" value="a"> Uses too much disk</label>
+      <label class="quiz-option"><input type="radio" name="q2" value="b"> Recomputes overlapping subproblems</label>
+    </fieldset>
+    <button class="btn-primary" type="submit"><i class="fa-solid fa-check"></i> Check answers</button>
+  </form>
+
+  <div id="quiz-result" class="ai-summary-card hidden" style="margin-top:20px;">
+    <div class="ai-summary-badge"><i class="fa-solid fa-trophy"></i> Demo result</div>
+    <p class="quiz-score">You got <strong>2 / 2</strong> in this preview.</p>
+    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">Correct: base case · overlapping subproblems.</p>
+    <a href="{% url 'notes:public_notes' %}" class="btn-outline">Back to note</a>
+  </div>
 </div>
-
-{% if quiz %}
-    {% if quiz.mcqs %}
-        <div class="card">
-            <h2 class="card-title">Multiple Choice Questions</h2>
-            {% for mcq in quiz.mcqs %}
-                <div id="mcq-{{ forloop.counter0 }}" style="padding:1rem;background:#f8fafc;border-radius:8px;margin-bottom:1rem;">
-                    <p style="margin:0 0 0.75rem;font-weight:600;">{{ forloop.counter }}. {{ mcq.question }}</p>
-                    {% for choice in mcq.choices %}
-                        <label class="quiz-option">
-                            <input type="radio" name="mcq{{ forloop.parentloop.counter0 }}" value="{{ forloop.counter0 }}" style="margin-right:0.5rem;">
-                            {{ choice }}
-                        </label>
-                    {% endfor %}
-                    <button type="button" class="btn btn-sm btn-primary mt-1" onclick="checkQuiz({{ forloop.counter0 }}, {{ mcq.answer_index }})">
-                        Check Answer
-                    </button>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    {% if quiz.short %}
-        <div class="card">
-            <h2 class="card-title">Short Answer Questions</h2>
-            {% for sq in quiz.short %}
-                <div style="padding:1rem;background:#f8fafc;border-radius:8px;margin-bottom:1rem;">
-                    <p style="margin:0 0 0.5rem;font-weight:600;">{{ forloop.counter }}. {{ sq.prompt }}</p>
-                    <p class="muted" style="font-size:0.85rem;margin:0;">💡 Hint: {{ sq.hint }}</p>
-                    <textarea class="textarea mt-1" rows="4" placeholder="Write your answer here..."></textarea>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    {% if not quiz.mcqs and not quiz.short %}
-        <div class="card">
-            <p class="muted" style="text-align:center;padding:1rem;">Not enough content to generate quiz. Please try with more text.</p>
-        </div>
-    {% endif %}
-{% endif %}
 {% endblock %}

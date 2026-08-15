@@ -1,85 +1,181 @@
-{% extends 'base.html' %}
-
-{% block title %}{{ note.title }} - Notes{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Week 4 — Recursion — ULAB StudyConnect{% endblock %}
 {% block content %}
-<a href="{% url 'notes:note_list' %}" class="btn btn-secondary btn-sm mb-2">← Back to Notes</a>
+<div class="note-detail-page">
 
-<div class="card">
-    <div class="flex flex-between flex-start">
-        <div style="flex:1;">
-            <h1 class="section-title" style="margin:0 0 0.5rem;font-size:1.5rem;">
-                {{ note.title }}
-                {% if note.is_public %}<span class="badge badge-success">Public</span>{% endif %}
-            </h1>
-            <div class="note-meta">
-                by <strong>{{ note.owner.profile.display_name|default:note.owner.username }}</strong>
-                · Created: {{ note.created_at|date:"M d, Y" }}
-                · Updated: {{ note.updated_at|date:"M d, Y H:i" }}
-                {% if note.course %}· Course: {{ note.course.code }} - {{ note.course.name }}{% endif %}
+  <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
+    <a href="{% url 'users:dashboard' %}"><i class="fa-solid fa-house"></i> Dashboard</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <a href="{% url 'notes:public_notes' %}">Resources</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <span class="breadcrumb-current">Week 4 — Recursion</span>
+  </nav>
+
+  <div class="note-detail-layout reveal">
+
+    <div class="note-detail-main">
+
+      <header class="note-detail-hero">
+        <div class="note-detail-hero-bg" aria-hidden="true"></div>
+        <div class="note-detail-hero-content">
+          <div class="note-detail-badges">
+            <span class="badge badge-indigo"><i class="fa-solid fa-book"></i> CSE 310</span>
+            <span class="badge badge-cyan"><i class="fa-solid fa-globe"></i> Public</span>
+            <span class="badge badge-amber"><i class="fa-solid fa-file-lines"></i> Notes</span>
+          </div>
+          <h1 class="note-detail-title">Week 4 — Recursion</h1>
+          <p class="note-detail-subtitle">A structured guide to recursive thinking — base cases, recursive cases, and classic algorithm patterns.</p>
+          <div class="note-detail-meta">
+            <div class="note-detail-author">
+              <span class="note-detail-avatar">S</span>
+              <div>
+                <span class="note-detail-author-name">Shahriar</span>
+                <span class="note-detail-author-role">CSE · Semester 5</span>
+              </div>
             </div>
+            <div class="note-detail-meta-items">
+              <span><i class="fa-regular fa-calendar"></i> Updated Aug 14, 2026</span>
+              <span><i class="fa-regular fa-eye"></i> 248 views</span>
+              <span><i class="fa-regular fa-bookmark"></i> 36 saves</span>
+            </div>
+          </div>
+          <div class="note-detail-actions">
+            <a href="{% url 'notes:note_create' %}" class="btn-outline btn-note-action"><i class="fa-solid fa-pen-to-square"></i> Edit</a>
+            <a href="{% url 'notes:pdf_upload' %}" class="btn-outline btn-note-action"><i class="fa-solid fa-file-pdf"></i> Attach PDF</a>
+            <a href="{% url 'notes:summarize' %}" class="btn-outline btn-note-action"><i class="fa-solid fa-wand-magic-sparkles"></i> Summarize</a>
+            <a href="{% url 'notes:quiz' %}" class="btn-primary btn-note-action"><i class="fa-solid fa-circle-question"></i> Take Quiz</a>
+          </div>
         </div>
-        {% if note.owner == user %}
-            <div class="actions" style="align-self:flex-start;">
-                <a href="{% url 'notes:note_edit' note.pk %}" class="btn btn-sm btn-primary">Edit</a>
-                <form method="get" action="{% url 'notes:pdf_upload_for_note' note.pk %}" style="display:inline;">
-                    <button type="submit" class="btn btn-sm btn-success">Attach PDF</button>
-                </form>
-            </div>
-        {% endif %}
-    </div>
-</div>
+      </header>
 
-<div class="card">
-    <h2 class="card-title">Note Content</h2>
-    <div style="white-space:pre-wrap;line-height:1.8;padding:1rem;background:#f8fafc;border-radius:8px;">{{ note.body_markdown }}</div>
+      <article class="note-article">
+        <p class="note-article-lead">Recursion solves a problem by reducing it to a smaller instance of the same problem, plus a <strong>base case</strong> that stops the chain. Mastering this pattern unlocks trees, graphs, divide-and-conquer, and backtracking.</p>
 
-    {% if note.youtube_urls %}
-        <div class="divider"></div>
-        <h3 style="margin-bottom:1rem;">YouTube References</h3>
-        {% for vid in note.youtube_video_ids %}
-            <div class="youtube-embed">
-                <iframe src="https://www.youtube.com/embed/{{ vid }}" allowfullscreen></iframe>
-            </div>
-        {% endfor %}
-    {% endif %}
-</div>
+        <h2 id="base-vs-recursive">Base case vs recursive case</h2>
+        <p>Every recursive function needs two parts working together:</p>
+        <ul>
+          <li><strong>Base case</strong> — the smallest input you can answer directly without further recursion.</li>
+          <li><strong>Recursive case</strong> — call the function on a strictly smaller or simpler input, moving toward the base case.</li>
+        </ul>
 
-{% if note.pdfs.count > 0 %}
-    <div class="card">
-        <h2 class="card-title">Attached PDFs ({{ note.pdfs.count }})</h2>
-        {% for pdf in note.pdfs.all %}
-            <div class="exam-item">
-                <div class="flex flex-between flex-center">
-                    <div>
-                        <strong>📄 {{ pdf.title }}</strong>
-                        <p class="muted" style="font-size:0.85rem;margin:0.25rem 0;">
-                            Uploaded: {{ pdf.created_at|date:"M d, Y" }}
-                            {% if pdf.extracted_text %}· Text extracted ✓{% endif %}
-                        </p>
-                    </div>
-                    {% if pdf.user == user %}
-                        <a href="{% url 'notes:pdf_detail' pdf.pk %}" class="btn btn-sm btn-primary">Open / Annotate</a>
-                    {% endif %}
-                </div>
-            </div>
-        {% endfor %}
-    </div>
-{% endif %}
-
-{% if note.owner == user %}
-    <div class="card">
-        <h2 class="card-title">Quick Tools</h2>
-        <div class="grid grid-2">
-            <a href="{% url 'notes:summarize' %}?note_id={{ note.id }}" class="btn btn-secondary">Summarize this Note</a>
-            <a href="{% url 'notes:quiz' %}?note_id={{ note.id }}" class="btn btn-secondary">Generate Quiz from Note</a>
+        <div class="note-code-block">
+          <div class="note-code-header">
+            <span><i class="fa-solid fa-code"></i> factorial(n)</span>
+            <button type="button" class="note-code-copy" aria-label="Copy code"><i class="fa-regular fa-copy"></i></button>
+          </div>
+          <pre><code>function factorial(n) {
+  if (n &lt;= 1) return 1;        // base case
+  return n * factorial(n - 1);   // recursive case
+}</code></pre>
         </div>
 
-        <div class="divider"></div>
-        <form method="post" action="{% url 'notes:note_delete' note.pk %}" data-confirm="Delete this note permanently?">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Delete Note</button>
-        </form>
+        <h2 id="classic-examples">Classic examples</h2>
+        <p>These patterns appear repeatedly in CSE 310 and beyond:</p>
+        <div class="note-example-grid">
+          <div class="note-example-card">
+            <span class="note-example-icon"><i class="fa-solid fa-hashtag"></i></span>
+            <h3>Factorial &amp; Fibonacci</h3>
+            <p>Linear recursion — each call depends on one smaller subproblem.</p>
+          </div>
+          <div class="note-example-card">
+            <span class="note-example-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+            <h3>Binary Search</h3>
+            <p>Divide the search space in half at each step — O(log n) efficiency.</p>
+          </div>
+          <div class="note-example-card">
+            <span class="note-example-icon"><i class="fa-solid fa-sitemap"></i></span>
+            <h3>Tree Traversals</h3>
+            <p>In-order, pre-order, post-order — natural fit for recursive structures.</p>
+          </div>
+          <div class="note-example-card">
+            <span class="note-example-icon"><i class="fa-solid fa-code-merge"></i></span>
+            <h3>Merge Sort</h3>
+            <p>Divide-and-conquer — split, recurse, then merge sorted halves.</p>
+          </div>
+        </div>
+
+        <h2 id="common-pitfalls">Common pitfalls</h2>
+        <ol>
+          <li><strong>Missing base case</strong> — leads to infinite recursion and stack overflow.</li>
+          <li><strong>Not progressing toward base case</strong> — input must get strictly smaller each call.</li>
+          <li><strong>Redundant work</strong> — naive Fibonacci is O(2ⁿ); use memoization or iteration.</li>
+        </ol>
+
+        <div class="note-callout">
+          <i class="fa-solid fa-lightbulb"></i>
+          <div>
+            <strong>Exam tip</strong>
+            <p>When tracing recursion on paper, write out the call stack top-to-bottom. Mark when each call returns its value to the caller.</p>
+          </div>
+        </div>
+      </article>
+
+      <section class="note-related" aria-labelledby="related-heading">
+        <div class="note-related-header">
+          <h2 id="related-heading">Related resources</h2>
+          <a href="{% url 'notes:public_notes' %}" class="note-related-link">View all <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="note-related-grid">
+          <a href="{% url 'notes:public_notes' %}" class="note-related-card">
+            <span class="badge badge-indigo">CSE 310</span>
+            <h3>Master Theorem Walkthrough</h3>
+            <span class="note-related-meta">Shahriar · Aug 14</span>
+          </a>
+          <a href="{% url 'notes:public_notes' %}" class="note-related-card">
+            <span class="badge badge-cyan">Cheatsheet</span>
+            <h3>Algorithms Cheatsheet</h3>
+            <span class="note-related-meta">Tanim · Aug 12</span>
+          </a>
+          <a href="{% url 'notes:public_notes' %}" class="note-related-card">
+            <span class="badge badge-amber">Summary</span>
+            <h3>Divide &amp; Conquer Patterns</h3>
+            <span class="note-related-meta">Atique · Aug 10</span>
+          </a>
+        </div>
+      </section>
+
     </div>
-{% endif %}
+
+    <aside class="note-detail-sidebar">
+      <div class="note-sidebar-card note-sidebar-toc">
+        <h3><i class="fa-solid fa-list-ul"></i> On this page</h3>
+        <nav class="note-toc" aria-label="Table of contents">
+          <a href="#base-vs-recursive" class="note-toc-link">Base vs recursive case</a>
+          <a href="#classic-examples" class="note-toc-link">Classic examples</a>
+          <a href="#common-pitfalls" class="note-toc-link">Common pitfalls</a>
+        </nav>
+      </div>
+
+      <div class="note-sidebar-card note-sidebar-author">
+        <h3>About the author</h3>
+        <div class="note-sidebar-author-info">
+          <span class="note-detail-avatar note-detail-avatar-lg">S</span>
+          <div>
+            <span class="note-sidebar-author-name">Shahriar</span>
+            <span class="note-sidebar-author-bio">12 public notes · CSE major</span>
+          </div>
+        </div>
+        <a href="{% url 'users:profile' %}" class="btn-outline btn-sidebar-full">View profile</a>
+      </div>
+
+      <div class="note-sidebar-card note-sidebar-actions">
+        <h3>Quick actions</h3>
+        <a href="{% url 'notes:summarize' %}" class="note-sidebar-action"><i class="fa-solid fa-wand-magic-sparkles"></i> AI Summarize</a>
+        <a href="{% url 'notes:quiz' %}" class="note-sidebar-action"><i class="fa-solid fa-circle-question"></i> Generate Quiz</a>
+        <a href="{% url 'planner:study_planner' %}" class="note-sidebar-action"><i class="fa-solid fa-calendar-plus"></i> Add to planner</a>
+        <button type="button" class="note-sidebar-action note-sidebar-action-btn"><i class="fa-regular fa-bookmark"></i> Save note</button>
+      </div>
+
+      <div class="note-sidebar-card note-sidebar-share">
+        <h3>Share</h3>
+        <div class="note-share-buttons">
+          <button type="button" class="note-share-btn" aria-label="Copy link"><i class="fa-solid fa-link"></i></button>
+          <button type="button" class="note-share-btn" aria-label="Share on Facebook"><i class="fa-brands fa-facebook-f"></i></button>
+          <button type="button" class="note-share-btn" aria-label="Share on LinkedIn"><i class="fa-brands fa-linkedin-in"></i></button>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
 {% endblock %}

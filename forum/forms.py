@@ -9,11 +9,11 @@ class PostForm(forms.ModelForm):
         fields = ("subject", "category", "title", "body", "post_type")
         labels = {"subject": "Subject", "category": "Category"}
         widgets = {
-            "subject": forms.Select(attrs={"class": "input", "id": "id_subject"}),
-            "category": forms.Select(attrs={"class": "input", "id": "id_category"}),
-            "title": forms.TextInput(attrs={"class": "input"}),
-            "body": forms.Textarea(attrs={"class": "textarea", "rows": 10}),
-            "post_type": forms.Select(attrs={"class": "input"}),
+            "subject": forms.Select(attrs={"class": "select-premium", "id": "id_subject"}),
+            "category": forms.Select(attrs={"class": "select-premium", "id": "id_category"}),
+            "title": forms.TextInput(attrs={"class": "input-premium no-icon"}),
+            "body": forms.Textarea(attrs={"class": "textarea-premium", "rows": 10}),
+            "post_type": forms.Select(attrs={"class": "select-premium"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -57,7 +57,7 @@ class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
         fields = ("body",)
-        widgets = {"body": forms.Textarea(attrs={"class": "textarea", "rows": 6})}
+        widgets = {"body": forms.Textarea(attrs={"class": "textarea-premium", "rows": 6})}
 
 
 class CommentForm(forms.ModelForm):

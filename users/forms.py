@@ -10,14 +10,14 @@ class ScholarUserCreationForm(UserCreationForm):
         model = User
         fields = ("username",)
         widgets = {
-            "username": forms.TextInput(attrs={"class": "input", "autocomplete": "username"}),
+            "username": forms.TextInput(attrs={"class": "input-premium", "autocomplete": "username"}),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for name in ("password1", "password2"):
             self.fields[name].widget.attrs.update(
-                {"class": "input", "autocomplete": "new-password"}
+                {"class": "input-premium", "autocomplete": "new-password"}
             )
 
 
@@ -32,20 +32,12 @@ class ProfileForm(forms.ModelForm):
         widgets = {
             "display_name": forms.TextInput(
                 attrs={
-                    "class": "input",
+                    "class": "input-premium",
                     "placeholder": "How others see you in the forum",
                 }
             ),
-            "department": forms.Select(
-                attrs={
-                    "class": "input"
-                }
-            ),
-            "semester": forms.Select(
-                attrs={
-                    "class": "input"
-                }
-            ),
+            "department": forms.Select(attrs={"class": "select-premium"}),
+            "semester": forms.Select(attrs={"class": "select-premium"}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -64,9 +56,11 @@ class ProfileForm(forms.ModelForm):
             choices=[("", "---")] + [(i, f"Semester {i}") for i in range(1, 13)]
         )
 
-        self.fields["first_name"].widget.attrs.update({"class": "input"})
-        self.fields["last_name"].widget.attrs.update({"class": "input"})
-        self.fields["email"].widget.attrs.update({"class": "input"})
+        self.fields["first_name"].widget.attrs.update({"class": "input-premium no-icon"})
+        self.fields["last_name"].widget.attrs.update({"class": "input-premium no-icon"})
+        self.fields["email"].widget.attrs.update({"class": "input-premium no-icon"})
+        self.fields["display_name"].widget.attrs.update({"class": "input-premium no-icon"})
+        self.fields["department"].widget.attrs.update({"class": "select-premium"})
 
     def save(self, commit=True):
         profile = super().save(commit=False)

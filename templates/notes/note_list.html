@@ -1,90 +1,68 @@
-{% extends 'base.html' %}
-
-{% block title %}My Notes - ULAB StudyConnect{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}My Notes — ULAB StudyConnect{% endblock %}
 {% block content %}
-<div class="flex flex-between flex-center mb-2">
-    <h1 class="section-title" style="margin:0;">My Notes</h1>
-    <div style="display:flex;gap:0.5rem;">
-        <a href="{% url 'notes:public_notes' %}" class="btn btn-secondary">Public Gallery</a>
-        <a href="{% url 'notes:note_create' %}" class="btn btn-primary">New Note</a>
+<div class="notes-hub-page">
+  <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
+    <a href="{% url 'users:dashboard' %}"><i class="fa-solid fa-house"></i> Dashboard</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <span class="breadcrumb-current">My notes</span>
+  </nav>
+
+  <div class="resources-hero reveal">
+    <div class="resources-hero-bg" aria-hidden="true"></div>
+    <div class="resources-hero-inner">
+      <div>
+        <span class="section-label"><i class="fa-solid fa-pen-nib"></i> My notebook</span>
+        <h1 class="resources-hero-title">Personal study<br><span class="text-gradient">notes</span></h1>
+        <p class="resources-hero-desc">Create, edit, and attach PDFs. Public notes appear in the campus gallery.</p>
+        <div class="resources-hero-actions">
+          <a href="{% url 'notes:note_create' %}" class="btn-primary"><i class="fa-solid fa-plus"></i> New note</a>
+          <a href="{% url 'notes:pdf_upload' %}" class="btn-outline"><i class="fa-solid fa-file-pdf"></i> Upload PDF</a>
+          <a href="{% url 'notes:public_notes' %}" class="btn-ghost">Public gallery</a>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
 
-<div class="grid grid-4 mb-3">
-    <a href="{% url 'notes:pdf_upload' %}" style="text-decoration:none;color:inherit;">
-        <div class="tool-card" style="border-color:var(--primary);text-align:center;height:100%;">
-            <div style="font-size:2rem;margin-bottom:0.5rem;">📄</div>
-            <strong>Upload PDF</strong>
-            <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">Annotate & Summarize</p>
-        </div>
-    </a>
-    <a href="{% url 'notes:summarize' %}" style="text-decoration:none;color:inherit;">
-        <div class="tool-card" style="border-color:var(--success);text-align:center;height:100%;">
-            <div style="font-size:2rem;margin-bottom:0.5rem;">📋</div>
-            <strong>Summarize</strong>
-            <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">AI Text Summary</p>
-        </div>
-    </a>
-    <a href="{% url 'notes:quiz' %}" style="text-decoration:none;color:inherit;">
-        <div class="tool-card" style="border-color:var(--warning);text-align:center;height:100%;">
-            <div style="font-size:2rem;margin-bottom:0.5rem;">❓</div>
-            <strong>Quiz Maker</strong>
-            <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">Generate MCQs</p>
-        </div>
-    </a>
-    <a href="{% url 'notes:note_create' %}" style="text-decoration:none;color:inherit;">
-        <div class="tool-card" style="border-color:var(--danger);text-align:center;height:100%;">
-            <div style="font-size:2rem;margin-bottom:0.5rem;">✏️</div>
-            <strong>Quick Note</strong>
-            <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">Write Markdown</p>
-        </div>
-    </a>
-</div>
-
-<div class="card">
-    {% if notes %}
-        {% for note in notes %}
-            <div class="note-item">
-                <div class="flex flex-between">
-                    <div style="flex:1;">
-                        <h3 class="post-title" style="margin:0;">
-                            <a href="{% url 'notes:note_detail' note.pk %}">{{ note.title }}</a>
-                            {% if note.is_public %}<span class="badge badge-success">Public</span>{% endif %}
-                        </h3>
-                        <div class="note-meta">
-                            Updated: {{ note.updated_at|date:"M d, Y H:i" }}
-                            {% if note.course %}· Course: {{ note.course.code }}{% endif %}
-                            · {{ note.pdfs.count }} PDF{{ note.pdfs.count|pluralize }} attached
-                        </div>
-                        <p style="margin:0.5rem 0;color:var(--text-light);">{{ note.body_markdown|truncatechars:150 }}</p>
-                    </div>
-                    <div class="actions" style="align-self:flex-start;">
-                        <a href="{% url 'notes:note_edit' note.pk %}" class="btn btn-sm btn-secondary">Edit</a>
-                        <form method="get" action="{% url 'notes:pdf_upload_for_note' note.pk %}" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-primary">Add PDF</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        {% endfor %}
-    {% else %}
-        <div style="text-align:center;padding:2rem;">
-            <p class="muted mb-2">No notes yet. Start creating your first note!</p>
-            <a href="{% url 'notes:note_create' %}" class="btn btn-primary">Create Note</a>
-        </div>
-    {% endif %}
-</div>
-
-{% if is_paginated %}
-    <div class="card" style="text-align:center;">
-        {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary">← Previous</a>
-        {% endif %}
-        <span class="muted" style="margin:0 1rem;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary">Next →</a>
-        {% endif %}
+  <div class="routine-table-card reveal">
+    <div class="routine-table-head">
+      <h2>Your notes <span class="badge" style="background:#f1f5f9;color:#64748b;">2</span></h2>
     </div>
-{% endif %}
+    <div class="table-scroll routine-table-wrap">
+      <table class="table-premium">
+        <thead><tr><th>Title</th><th>Course</th><th>Updated</th><th>Visibility</th><th style="text-align:right;">Action</th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:600;">Week 4 — Recursion</td>
+            <td><span class="badge badge-indigo">CSE 310</span></td>
+            <td style="color:#94a3b8;">Aug 14, 2026</td>
+            <td><span class="badge badge-cyan"><i class="fa-solid fa-globe"></i> Public</span></td>
+            <td style="text-align:right;white-space:nowrap;">
+              <a href="{% url 'notes:public_notes' %}" class="btn-outline" style="padding:6px 12px;font-size:0.78rem;">Open</a>
+              <a href="/notes/note_confirm_delete.html" class="btn-ghost" style="padding:6px 10px;font-size:0.78rem;color:#dc2626;">Delete</a>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-weight:600;">SQL Joins Practice</td>
+            <td><span class="badge badge-indigo">CSE 311</span></td>
+            <td style="color:#94a3b8;">Aug 11, 2026</td>
+            <td><span class="badge" style="background:#f1f5f9;color:#64748b;"><i class="fa-solid fa-lock"></i> Private</span></td>
+            <td style="text-align:right;white-space:nowrap;">
+              <a href="{% url 'notes:public_notes' %}" class="btn-outline" style="padding:6px 12px;font-size:0.78rem;">Open</a>
+              <a href="/notes/note_confirm_delete.html" class="btn-ghost" style="padding:6px 10px;font-size:0.78rem;color:#dc2626;">Delete</a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="exam-card-list">
+      <a href="{% url 'notes:public_notes' %}" class="exam-card">
+        <div class="exam-card-top"><div><div class="exam-card-course">Week 4 — Recursion</div><div class="exam-card-name">CSE 310 · Aug 14</div></div><span class="badge badge-cyan">Public</span></div>
+      </a>
+      <a href="{% url 'notes:public_notes' %}" class="exam-card">
+        <div class="exam-card-top"><div><div class="exam-card-course">SQL Joins Practice</div><div class="exam-card-name">CSE 311 · Aug 11</div></div><span class="badge">Private</span></div>
+      </a>
+    </div>
+  </div>
+</div>
 {% endblock %}
