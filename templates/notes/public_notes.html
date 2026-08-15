@@ -2,68 +2,51 @@
 {% block title %}Public Notes — ULAB StudyConnect{% endblock %}
 {% block content %}
 <section class="resources-page">
-
-  <!-- Hero -->
   <div class="resources-hero reveal">
     <div class="resources-hero-bg" aria-hidden="true"></div>
     <div class="resources-hero-inner">
       <div class="resources-hero-copy">
         <span class="section-label"><i class="fa-solid fa-book-open-reader"></i> Resource library</span>
         <h1 class="resources-hero-title">Discover study materials<br><span class="text-gradient">shared by ULAB students</span></h1>
-        <p class="resources-hero-desc">Browse cheatsheets, lecture notes, and summaries across every department — curated by peers who've been through the same courses.</p>
+        <p class="resources-hero-desc">Browse lecture notes and summaries shared by peers.</p>
         <div class="resources-hero-actions">
-          <a href="{% url 'users:register' %}" class="btn-primary"><span class="btn-shine" aria-hidden="true"></span><span class="btn-label"><i class="fa-solid fa-cloud-arrow-up"></i> Share your notes</span></a>
+          {% if user.is_authenticated %}
+          <a href="{% url 'notes:note_create' %}" class="btn-primary"><span class="btn-shine" aria-hidden="true"></span><span class="btn-label"><i class="fa-solid fa-cloud-arrow-up"></i> Share your notes</span></a>
           <a href="{% url 'notes:note_list' %}" class="btn-outline"><i class="fa-solid fa-pen-nib"></i> My notes</a>
+          {% else %}
+          <a href="{% url 'users:register' %}" class="btn-primary"><span class="btn-shine" aria-hidden="true"></span><span class="btn-label"><i class="fa-solid fa-cloud-arrow-up"></i> Share your notes</span></a>
+          {% endif %}
         </div>
       </div>
       <div class="resources-hero-stats" aria-label="Library statistics">
         <div class="resources-stat-card">
-          <span class="resources-stat-value">3,580</span>
+          <span class="resources-stat-value">{{ public_count }}</span>
           <span class="resources-stat-label">Public notes</span>
         </div>
         <div class="resources-stat-card">
-          <span class="resources-stat-value">42</span>
+          <span class="resources-stat-value">{{ course_count }}</span>
           <span class="resources-stat-label">Courses covered</span>
-        </div>
-        <div class="resources-stat-card resources-stat-card-accent">
-          <span class="resources-stat-value"><i class="fa-solid fa-arrow-trend-up"></i> 128</span>
-          <span class="resources-stat-label">Added this week</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Toolbar -->
-  <div class="resources-toolbar reveal">
+  <form class="resources-toolbar reveal" method="get">
     <div class="resources-search">
       <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-      <input type="search" id="resource-search" class="input-premium" placeholder="Search notes, courses, authors..." aria-label="Search resources">
+      <input type="search" name="q" id="resource-search" class="input-premium" placeholder="Search notes, courses, authors..." value="{{ search_q }}" aria-label="Search resources">
     </div>
-    <div class="resources-filters" role="group" aria-label="Filter by type">
-      <button type="button" class="filter-pill active" data-filter="all">All</button>
-      <button type="button" class="filter-pill" data-filter="cheatsheet">Cheatsheets</button>
-      <button type="button" class="filter-pill" data-filter="notes">Notes</button>
-      <button type="button" class="filter-pill" data-filter="summary">Summaries</button>
-    </div>
-    <div class="resources-toolbar-end">
-      <select class="select-premium resources-sort" aria-label="Sort resources">
-        <option>Newest first</option>
-        <option>Most popular</option>
-        <option>Course A–Z</option>
-      </select>
-    </div>
-  </div>
+  </form>
 
-  <!-- Grid -->
   <div class="resources-grid reveal" id="resources-grid">
     {% for note in notes %}
-    <a href="{% url 'notes:note_detail' note.pk %}" class="resource-card-premium" data-type="notes" data-search="{{ note.title }} {{ note.body_markdown }}">
+    <a href="{% url 'notes:note_detail' note.pk %}" class="resource-card-premium" data-type="notes" data-search="{{ note.title }} {{ note.course_text }} {{ note.owner.username }}">
       <div class="resource-card-glow" aria-hidden="true"></div>
       <div class="resource-card-top">
         <span class="resource-card-icon" style="--rc:#4f46e5;--rc-bg:rgba(79,70,229,0.12);"><i class="fa-solid fa-book-open"></i></span>
         <div class="resource-card-badges">
           {% if note.course %}<span class="badge badge-indigo">{{ note.course.code }}</span>{% elif note.course_text %}<span class="badge badge-indigo">{{ note.course_text }}</span>{% endif %}
-          <span class="badge badge-cyan">Note</span>
+          {% if note.pdfs.all %}<span class="badge badge-amber"><i class="fa-solid fa-file-pdf"></i> PDF</span>{% endif %}
         </div>
       </div>
       <h3 class="resource-card-title">{{ note.title }}</h3>
@@ -78,16 +61,8 @@
       <span class="resource-card-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></span>
     </a>
     {% empty %}
-    <p>No public notes yet.</p>
+    <p>No public notes yet.{% if user.is_authenticated %} <a href="{% url 'notes:note_create' %}">Create one</a> and mark it public.{% endif %}</p>
     {% endfor %}
   </div>
-
-  <div class="resources-empty hidden" id="resources-empty" aria-live="polite">
-    <div class="resources-empty-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
-    <h3>No resources found</h3>
-    <p>Try adjusting your search or filters to find what you're looking for.</p>
-    <button type="button" class="btn-outline" id="resources-reset">Clear filters</button>
-  </div>
-
 </section>
 {% endblock %}

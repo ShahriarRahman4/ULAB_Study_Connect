@@ -17,6 +17,8 @@ urlpatterns = [
         views.PdfUploadView.as_view(),
         name="pdf_upload_for_note",
     ),
+    path("pdf/<int:pk>/update/", views.PdfUpdateView.as_view(), name="pdf_update"),
+    path("pdf/<int:pk>/delete/", views.PdfDeleteView.as_view(), name="pdf_delete"),
     path("pdf/<int:pk>/file/", views.PdfFileServeView.as_view(), name="pdf_file"),
     path("pdf/<int:pk>/", views.PdfDetailView.as_view(), name="pdf_detail"),
     path(

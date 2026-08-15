@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}How do I analyze merge sort time complexity? — Forum{% endblock %}
+{% block title %}{{ post.title }} — Forum{% endblock %}
 {% block content %}
 <div class="forum-page forum-detail-page">
 
   <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
     <a href="{% url 'forum:feed' %}"><i class="fa-solid fa-comments"></i> Forum</a>
     <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-    <span class="breadcrumb-current">Merge sort time complexity</span>
+    <span class="breadcrumb-current">{{ post.title|truncatechars:48 }}</span>
   </nav>
 
   <div class="forum-layout">
@@ -14,29 +14,45 @@
 
       <article class="forum-post-card reveal">
         <div class="forum-post-vote" aria-label="Score">
-          <button type="button" class="forum-vote-btn" aria-label="Upvote"><i class="fa-solid fa-caret-up"></i></button>
-          <strong id="forum-score">24</strong>
-          <button type="button" class="forum-vote-btn" aria-label="Downvote"><i class="fa-solid fa-caret-down"></i></button>
+          {% if user.is_authenticated %}
+          <form method="post" action="{% url 'forum:post_vote' post.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="value" value="1">
+            <button type="submit" class="forum-vote-btn" aria-label="Upvote"><i class="fa-solid fa-caret-up"></i></button>
+          </form>
+          <strong id="forum-score">{{ post.score }}</strong>
+          <form method="post" action="{% url 'forum:post_vote' post.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="value" value="-1">
+            <button type="submit" class="forum-vote-btn" aria-label="Downvote"><i class="fa-solid fa-caret-down"></i></button>
+          </form>
+          {% else %}
+          <strong id="forum-score">{{ post.score }}</strong>
+          {% endif %}
         </div>
         <div class="forum-post-content">
           <div class="forum-thread-tags">
-            <span class="badge badge-amber">Question</span>
-            <span class="forum-thread-topic">CSE · Algorithms</span>
-            <span class="forum-thread-hot"><i class="fa-solid fa-fire"></i> Trending</span>
+            <span class="badge {% if post.post_type == 'question' %}badge-amber{% else %}badge-cyan{% endif %}">{{ post.get_post_type_display }}</span>
+            {% if post.subject_text %}<span class="forum-thread-topic">{{ post.subject_text }}</span>{% endif %}
           </div>
-          <h1 class="forum-post-title">How do I analyze merge sort time complexity?</h1>
-          <p class="forum-post-body">I understand the divide step but I'm stuck on the recurrence T(n) = 2T(n/2) + O(n). Can someone walk through Master Theorem for this case, with a small example?</p>
+          <h1 class="forum-post-title">{{ post.title }}</h1>
+          <div class="forum-post-body">{{ post.body|linebreaks }}</div>
           <div class="forum-post-footer">
             <div class="note-detail-author">
-              <span class="note-detail-avatar">T</span>
+              <span class="note-detail-avatar">{{ post.author.username|slice:":1"|upper }}</span>
               <div>
-                <span class="note-detail-author-name">Tanim</span>
-                <span class="note-detail-author-role">Asked 2 hours ago</span>
+                <span class="note-detail-author-name">{{ post.author.get_full_name|default:post.author.username }}</span>
+                <span class="note-detail-author-role">{{ post.created_at|timesince }} ago</span>
               </div>
             </div>
             <div class="forum-post-stats">
-              <span><i class="fa-regular fa-eye"></i> 186 views</span>
-              <span><i class="fa-regular fa-comment"></i> 2 answers</span>
+              <span><i class="fa-regular fa-comment"></i> {{ post.answers.count }} answers</span>
+              {% if is_author %}
+              <form method="post" action="{% url 'forum:post_delete' post.pk %}" data-confirm="Delete this thread?">
+                {% csrf_token %}
+                <button type="submit" class="btn-ghost" style="color:#dc2626;padding:6px 10px;font-size:0.8rem;">Delete</button>
+              </form>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -44,61 +60,68 @@
 
       <section class="forum-answers reveal" aria-labelledby="answers-heading">
         <div class="forum-answers-header">
-          <h2 id="answers-heading">2 Answers</h2>
-          <span class="forum-answers-sort">Sorted by score</span>
+          <h2 id="answers-heading">{{ post.answers.count }} Answer{{ post.answers.count|pluralize }}</h2>
         </div>
 
-        <article class="forum-answer-card forum-answer-accepted">
-          <div class="forum-answer-badge"><i class="fa-solid fa-check"></i> Accepted</div>
+        {% for answer in post.answers.all %}
+        <article class="forum-answer-card {% if answer.is_accepted %}forum-answer-accepted{% endif %}">
+          {% if answer.is_accepted %}<div class="forum-answer-badge"><i class="fa-solid fa-check"></i> Accepted</div>{% endif %}
           <div class="forum-post-vote">
-            <button type="button" class="forum-vote-btn is-active" aria-label="Upvote"><i class="fa-solid fa-caret-up"></i></button>
-            <strong>18</strong>
-            <button type="button" class="forum-vote-btn" aria-label="Downvote"><i class="fa-solid fa-caret-down"></i></button>
+            {% if user.is_authenticated %}
+            <form method="post" action="{% url 'forum:answer_vote' post.pk answer.pk %}">
+              {% csrf_token %}
+              <input type="hidden" name="value" value="1">
+              <button type="submit" class="forum-vote-btn" aria-label="Upvote"><i class="fa-solid fa-caret-up"></i></button>
+            </form>
+            <strong>{{ answer.score }}</strong>
+            <form method="post" action="{% url 'forum:answer_vote' post.pk answer.pk %}">
+              {% csrf_token %}
+              <input type="hidden" name="value" value="-1">
+              <button type="submit" class="forum-vote-btn" aria-label="Downvote"><i class="fa-solid fa-caret-down"></i></button>
+            </form>
+            {% else %}
+            <strong>{{ answer.score }}</strong>
+            {% endif %}
           </div>
           <div class="forum-post-content">
-            <p class="forum-post-body">By Master Theorem, a=2, b=2, f(n)=O(n). Since log<sub>b</sub>(a)=1, case 2 applies and T(n)=Θ(n log n). You pay linear merge work at each of log n levels of the recursion tree.</p>
-            <div class="note-code-block">
-              <div class="note-code-header"><span><i class="fa-solid fa-code"></i> Recurrence</span></div>
-              <pre><code>T(n) = 2T(n/2) + Θ(n)
-     = Θ(n log n)</code></pre>
-            </div>
+            <div class="forum-post-body">{{ answer.body|linebreaks }}</div>
             <div class="forum-post-footer">
               <div class="note-detail-author">
-                <span class="note-detail-avatar">S</span>
+                <span class="note-detail-avatar">{{ answer.author.username|slice:":1"|upper }}</span>
                 <div>
-                  <span class="note-detail-author-name">Shahriar</span>
-                  <span class="note-detail-author-role">Answered 1 hour ago</span>
+                  <span class="note-detail-author-name">{{ answer.author.get_full_name|default:answer.author.username }}</span>
+                  <span class="note-detail-author-role">{{ answer.created_at|timesince }} ago</span>
                 </div>
               </div>
+              {% if is_author and not answer.is_accepted %}
+              <form method="post" action="{% url 'forum:answer_accept' post.pk answer.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn-outline" style="padding:6px 12px;font-size:0.8rem;">Accept</button>
+              </form>
+              {% endif %}
             </div>
           </div>
         </article>
-
-        <article class="forum-answer-card">
-          <div class="forum-post-vote">
-            <button type="button" class="forum-vote-btn" aria-label="Upvote"><i class="fa-solid fa-caret-up"></i></button>
-            <strong>6</strong>
-            <button type="button" class="forum-vote-btn" aria-label="Downvote"><i class="fa-solid fa-caret-down"></i></button>
-          </div>
-          <div class="forum-post-content">
-            <p class="forum-post-body">If Master Theorem feels abstract, draw 3 levels of the tree: n + n/2+n/2 + n/4×4. Each level sums to n, and there are log n levels.</p>
-            <div class="forum-post-footer">
-              <div class="note-detail-author">
-                <span class="note-detail-avatar">A</span>
-                <div>
-                  <span class="note-detail-author-name">Atique</span>
-                  <span class="note-detail-author-role">Answered 45 minutes ago</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </article>
+        {% empty %}
+        <p>No answers yet. Write the first reply in text.</p>
+        {% endfor %}
       </section>
 
+      {% if post.comments.all %}
+      <section class="reveal" style="margin-top:24px;">
+        <h2>Comments</h2>
+        {% for comment in post.comments.all %}
+        <p><strong>{{ comment.author.username }}</strong> · {{ comment.created_at|timesince }} ago</p>
+        <div>{{ comment.body|linebreaks }}</div>
+        {% endfor %}
+      </section>
+      {% endif %}
+
+      {% if user.is_authenticated %}
       <form method="post" action="{% url 'forum:answer_create' post.pk %}" class="forum-reply-form reveal">
         {% csrf_token %}
         <h2>Your answer</h2>
-        <p class="forum-reply-hint">Explain the why, not just the formula. Course-mates will thank you later.</p>
+        <p class="forum-reply-hint">Write in plain text. Line breaks are kept.</p>
         {{ answer_form.body }}
         {{ answer_form.body.errors }}
         <div class="pdf-form-actions">
@@ -106,28 +129,35 @@
           <button class="btn-primary" type="submit"><i class="fa-solid fa-paper-plane"></i> Post answer</button>
         </div>
       </form>
+      <form method="post" action="{% url 'forum:comment_create' post.pk %}" class="forum-reply-form reveal" style="margin-top:16px;">
+        {% csrf_token %}
+        <h2>Comment</h2>
+        {{ comment_form.body }}
+        <div class="pdf-form-actions">
+          <button class="btn-outline" type="submit">Add comment</button>
+        </div>
+      </form>
+      {% else %}
+      <p class="reveal"><a href="{% url 'users:login' %}">Sign in</a> to write an answer in text.</p>
+      {% endif %}
 
     </div>
 
     <aside class="forum-aside reveal">
       <div class="note-sidebar-card">
         <h3>Related threads</h3>
-        <a href="{% url 'forum:feed' %}" class="forum-related-link">
-          <strong>Master Theorem walkthrough</strong>
-          <span>CSE 310 · 12 votes</span>
+        {% for rel in related_posts %}
+        <a href="{% url 'forum:post_detail' rel.pk %}" class="forum-related-link">
+          <strong>{{ rel.title }}</strong>
+          <span>{{ rel.score }} votes · {{ rel.created_at|timesince }} ago</span>
         </a>
-        <a href="{% url 'forum:feed' %}" class="forum-related-link">
-          <strong>Recursion vs iteration for sorting</strong>
-          <span>Algorithms · 8 votes</span>
-        </a>
-        <a href="{% url 'notes:public_notes' %}" class="forum-related-link">
-          <strong>Week 4 — Recursion notes</strong>
-          <span>Resource · Shahriar</span>
-        </a>
+        {% empty %}
+        <p class="pdf-aside-copy">No other threads yet.</p>
+        {% endfor %}
       </div>
       <div class="note-sidebar-card">
         <h3>Ask another</h3>
-        <p class="pdf-aside-copy">Stuck on a follow-up? Start a new thread so others can find it later.</p>
+        <p class="pdf-aside-copy">Start a new thread in plain text.</p>
         <a href="{% url 'forum:post_create' %}" class="btn-outline btn-sidebar-full">New thread</a>
       </div>
     </aside>

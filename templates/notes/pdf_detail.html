@@ -1,31 +1,76 @@
 {% extends "base.html" %}
-{% block title %}PDF — ULAB StudyConnect{% endblock %}
+{% block title %}{{ pdf.title }} — ULAB StudyConnect{% endblock %}
 {% block content %}
 <div class="notes-hub-page">
   <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
     <a href="{% url 'notes:note_list' %}">My notes</a>
     <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-    <a href="{% url 'notes:public_notes' %}">Week 4 — Recursion</a>
-    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-    <span class="breadcrumb-current">Lecture 4 slides</span>
+    {% if pdf.note %}<a href="{% url 'notes:note_detail' pdf.note.pk %}">{{ pdf.note.title }}</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>{% endif %}
+    <span class="breadcrumb-current">{{ pdf.title }}</span>
   </nav>
 
   <div class="pdf-viewer-card reveal">
     <div class="pdf-viewer-toolbar">
       <div>
-        <h1>Lecture 4 slides</h1>
-        <p>Attached to Week 4 — Recursion · demo preview</p>
+        <h1>{{ pdf.title }}</h1>
+        <p>{% if pdf.note %}Attached to {{ pdf.note.title }}{% else %}Standalone PDF{% endif %}</p>
       </div>
       <div class="resources-hero-actions">
-        <a href="{% url 'notes:public_notes' %}" class="btn-outline">Back to note</a>
-        <a href="{% url 'notes:pdf_upload' %}" class="btn-ghost">Replace file</a>
+        {% if pdf.note %}<a href="{% url 'notes:note_detail' pdf.note.pk %}" class="btn-outline">Back to note</a>{% endif %}
+        <a href="{{ pdf_download_url }}" class="btn-ghost">Download</a>
+        {% if is_owner %}
+        <a href="{% url 'notes:pdf_update' pdf.pk %}" class="btn-outline">Update PDF</a>
+        <a href="{% url 'notes:pdf_delete' pdf.pk %}" class="btn-ghost" style="color:#dc2626;">Delete</a>
+        {% endif %}
       </div>
     </div>
-    <div class="pdf-viewer-stage">
-      <i class="fa-solid fa-file-pdf"></i>
-      <h3>PDF preview</h3>
-      <p>Your uploaded document would render in this viewer.</p>
+    <div class="pdf-viewer-stage pdf-js-stage">
+      <div id="pdf-js-pages" class="pdf-js-pages" data-pdf-url="{{ pdf_file_url }}"></div>
+      <p id="pdf-js-status" class="pdf-js-status">Loading PDF…</p>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+(function () {
+  var host = document.getElementById("pdf-js-pages");
+  var statusEl = document.getElementById("pdf-js-status");
+  if (!host || typeof pdfjsLib === "undefined") return;
+  var url = host.getAttribute("data-pdf-url");
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+  function fail(msg) {
+    if (statusEl) statusEl.textContent = msg;
+  }
+
+  pdfjsLib.getDocument({ url: url, withCredentials: true }).promise.then(function (pdf) {
+    if (statusEl) statusEl.remove();
+    var scale = Math.min(1.6, Math.max(1.15, (host.clientWidth || 800) / 620));
+    function renderPage(num) {
+      return pdf.getPage(num).then(function (page) {
+        var viewport = page.getViewport({ scale: scale });
+        var canvas = document.createElement("canvas");
+        var ctx = canvas.getContext("2d");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.className = "pdf-js-page";
+        host.appendChild(canvas);
+        return page.render({ canvasContext: ctx, viewport: viewport }).promise;
+      });
+    }
+    var chain = Promise.resolve();
+    for (var i = 1; i <= pdf.numPages; i++) {
+      (function (n) { chain = chain.then(function () { return renderPage(n); }); })(i);
+    }
+    return chain;
+  }).catch(function () {
+    fail("Could not render this PDF. Use Download instead.");
+  });
+})();
+</script>
 {% endblock %}

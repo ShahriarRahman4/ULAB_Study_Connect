@@ -195,7 +195,67 @@ def _split_course_cell(raw: str) -> tuple[str, str, str, str]:
     return code, section, room, faculty
 
 
+def _parse_tabular_excel(path: str | Path) -> list[dict[str, Any]]:
+    df = pd.read_excel(path, engine="openpyxl")
+    if df.empty:
+        return []
+
+    cols = [str(c) for c in df.columns]
+    code_col = _pick_column(cols, CODE_ALIASES)
+    name_col = _pick_column(cols, NAME_ALIASES)
+    date_col = _pick_column(cols, DATE_ALIASES)
+    time_col = _pick_column(cols, TIME_ALIASES)
+    room_col = _pick_column(cols, ROOM_ALIASES)
+    section_col = _pick_column(cols, frozenset({"section", "sec", "class"}))
+    faculty_col = _pick_column(cols, frozenset({"faculty", "teacher", "instructor", "lecturer"}))
+
+    inferred_code, inferred_date = _infer_columns_from_data(df)
+    code_col = code_col or inferred_code
+    date_col = date_col or inferred_date
+    if not code_col or not date_col:
+        return []
+
+    rows_out: list[dict[str, Any]] = []
+    for _, row in df.iterrows():
+        exam_date = _parse_date(row.get(date_col))
+        if exam_date is None:
+            continue
+        raw_code = row.get(code_col)
+        if not is_valid_cell(raw_code):
+            continue
+        code, section, room, faculty = _split_course_cell(str(raw_code))
+        if not code:
+            code = normalize_course(str(raw_code))
+        if section_col and is_valid_cell(row.get(section_col)):
+            section = str(row.get(section_col)).strip()
+        if room_col and is_valid_cell(row.get(room_col)):
+            room = str(row.get(room_col)).strip()
+        if faculty_col and is_valid_cell(row.get(faculty_col)):
+            faculty = str(row.get(faculty_col)).strip()
+        course_name = code
+        if name_col and is_valid_cell(row.get(name_col)):
+            course_name = str(row.get(name_col)).strip()
+        exam_time = ""
+        if time_col and is_valid_cell(row.get(time_col)):
+            exam_time = str(row.get(time_col)).strip()
+        if not code:
+            continue
+        rows_out.append({
+            "course_code": code.upper().strip(),
+            "section": section.strip(),
+            "room": room.strip(),
+            "faculty": faculty.strip(),
+            "exam_date": exam_date,
+            "exam_time": exam_time,
+            "course_name": course_name,
+        })
+    return rows_out
+
+
 def parse_routine_excel(path: str | Path) -> list[dict[str, Any]]:
+    if pd is None:
+        raise RuntimeError("Install pandas and openpyxl to import exam routines.")
+
     df = pd.read_excel(path, engine="openpyxl", header=None)
     if df.empty:
         return []
@@ -203,12 +263,14 @@ def parse_routine_excel(path: str | Path) -> list[dict[str, Any]]:
     header_row_idx = -1
     for i, row in df.iterrows():
         row_str = " ".join(str(val).lower() for val in row if not pd.isna(val))
-        if ("day" in row_str and "time" in row_str) or ("am" in row_str and "pm" in row_str):
+        if (("day" in row_str or "date" in row_str) and "time" in row_str) or (
+            "am" in row_str and "pm" in row_str
+        ):
             header_row_idx = i
             break
 
     if header_row_idx == -1:
-        return []
+        return _parse_tabular_excel(path)
 
     header_row = df.iloc[header_row_idx]
     time_slots = []
@@ -259,7 +321,7 @@ def parse_routine_excel(path: str | Path) -> list[dict[str, Any]]:
                     "course_name": code.upper().strip(),
                 })
 
-    return rows_out
+    return rows_out or _parse_tabular_excel(path)
 
 
 def link_exams_to_courses(exams_iterable) -> None:

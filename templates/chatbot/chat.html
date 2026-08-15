@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% load nova %}
+{% block title %}Nova — AI Study Tutor{% endblock %}
+{% block extra_head %}
+<style>
+  .page-wrap:has(.nova-page) { max-width: 1120px; }
+</style>
+{% endblock %}
+{% block content %}
+<div class="nova-page">
+  <div class="resources-hero reveal nova-hero">
+    <div class="resources-hero-bg" aria-hidden="true"></div>
+    <div class="resources-hero-inner">
+      <div>
+        <span class="section-label"><i class="fa-solid fa-sparkles"></i> AI tutor</span>
+        <h1 class="resources-hero-title">Meet <span class="text-gradient">Nova</span></h1>
+        <p class="resources-hero-desc">Your premium study copilot for ULAB — exam tactics, course concepts, and how to use StudyConnect without the noise.</p>
+      </div>
+      <div class="resources-hero-stats">
+        <div class="resources-stat-card"><span class="resources-stat-value">24/7</span><span class="resources-stat-label">On campus</span></div>
+        <div class="resources-stat-card resources-stat-card-accent"><span class="resources-stat-value"><i class="fa-solid fa-brain"></i></span><span class="resources-stat-label">Study-first</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nova-shell reveal">
+    <aside class="nova-aside">
+      <div class="note-sidebar-card">
+        <h3><i class="fa-solid fa-bolt"></i> Try asking</h3>
+        <button type="button" class="nova-chip" data-prompt="How do I use the study planner with my exam routine?">Planner + routines</button>
+        <button type="button" class="nova-chip" data-prompt="Explain merge sort time complexity with Master Theorem.">Master Theorem</button>
+        <button type="button" class="nova-chip" data-prompt="What's the difference between 3NF and BCNF?">3NF vs BCNF</button>
+        <button type="button" class="nova-chip" data-prompt="Give me a 4-hour study block for tonight before finals.">Tonight's block</button>
+      </div>
+      <div class="note-sidebar-card">
+        <h3>Nova's rules</h3>
+        <ul class="pdf-tips">
+          <li>Won't invent official exam dates — use Routines.</li>
+          <li>Explains concepts, doesn't take the exam for you.</li>
+          <li>Works offline-smart; uses a cloud model if an API key is set.</li>
+        </ul>
+      </div>
+    </aside>
+
+    <section class="nova-panel" aria-label="Chat with Nova">
+      <header class="nova-panel-head">
+        <div class="nova-avatar" aria-hidden="true"><i class="fa-solid fa-brain"></i></div>
+        <div class="nova-id">
+          <strong>Nova</strong>
+          <span class="nova-status"><span class="nova-dot"></span> Ready to study</span>
+        </div>
+        <button type="button" class="nova-clear" id="nova-clear">Clear</button>
+      </header>
+
+      <div class="nova-thread" id="nova-thread">
+        {% for msg in history %}
+          <div class="nova-bubble nova-bubble-{{ msg.role }}">
+            {% if msg.role == "assistant" %}<span class="nova-mini"><i class="fa-solid fa-sparkles"></i></span>{% endif %}
+            <div class="nova-bubble-body">{% if msg.role == "assistant" %}{{ msg.content|nova_md }}{% else %}{{ msg.content|nova_plain }}{% endif %}</div>
+          </div>
+        {% empty %}
+          <div class="nova-empty">
+            <div class="nova-empty-orb"><i class="fa-solid fa-graduation-cap"></i></div>
+            <h2>What should we tackle?</h2>
+            <p>Ask about CSE 310, your routine, or a messy theorem. I'll keep it exam-practical.</p>
+          </div>
+        {% endfor %}
+      </div>
+
+      <form class="nova-composer" id="nova-form">
+        {% csrf_token %}
+        <label class="sr-only" for="nova-input">Message</label>
+        <textarea id="nova-input" rows="2" maxlength="4000" placeholder="Ask Nova about a course, exam tactic, or StudyConnect…" required></textarea>
+        <button type="submit" class="nova-send" id="nova-send">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>Send</span>
+        </button>
+      </form>
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+  var form = document.getElementById("nova-form");
+  var input = document.getElementById("nova-input");
+  var thread = document.getElementById("nova-thread");
+  var sendBtn = document.getElementById("nova-send");
+  var csrf = form.querySelector("[name=csrfmiddlewaretoken]").value;
+  var apiUrl = "{% url 'chatbot:api' %}";
+  var clearUrl = "{% url 'chatbot:clear' %}";
+
+  function htmlEscape(s) {
+    return s.replace(/[&<>"']/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+    });
+  }
+  function formatBody(s) {
+    return htmlEscape(s).replace(/\n/g, "<br>");
+  }
+  function addBubble(role, text, html) {
+    var empty = thread.querySelector(".nova-empty");
+    if (empty) empty.remove();
+    var wrap = document.createElement("div");
+    wrap.className = "nova-bubble nova-bubble-" + role;
+    wrap.innerHTML = (role === "assistant" ? '<span class="nova-mini"><i class="fa-solid fa-sparkles"></i></span>' : "") +
+      '<div class="nova-bubble-body">' + (html || formatBody(text || "")) + "</div>";
+    thread.appendChild(wrap);
+    thread.scrollTop = thread.scrollHeight;
+    return wrap;
+  }
+
+  function send(text) {
+    if (!text) return;
+    addBubble("user", text);
+    input.value = "";
+    sendBtn.disabled = true;
+    var typing = addBubble("assistant", "Thinking…");
+    typing.classList.add("nova-typing");
+    fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": csrf },
+      body: JSON.stringify({ message: text })
+    }).then(function (r) { return r.json(); }).then(function (data) {
+      typing.remove();
+      addBubble("assistant", (data && data.reply) || "I couldn't reply just now. Try again.", data && data.reply_html);
+    }).catch(function () {
+      typing.remove();
+      addBubble("assistant", "Network hiccup — try once more.");
+    }).finally(function () { sendBtn.disabled = false; input.focus(); });
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    send(input.value.trim());
+  });
+  input.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
+  });
+  document.querySelectorAll(".nova-chip").forEach(function (btn) {
+    btn.addEventListener("click", function () { send(btn.getAttribute("data-prompt")); });
+  });
+  var clearBtn = document.getElementById("nova-clear");
+  if (clearBtn) {
+    clearBtn.addEventListener("click", function () {
+      fetch(clearUrl, { method: "POST", headers: { "X-CSRFToken": csrf } }).then(function () {
+        thread.innerHTML = '<div class="nova-empty"><div class="nova-empty-orb"><i class="fa-solid fa-graduation-cap"></i></div><h2>Cleared.</h2><p>Ask a new question whenever you are ready.</p></div>';
+      });
+    });
+  }
+})();
+</script>
+{% endblock %}

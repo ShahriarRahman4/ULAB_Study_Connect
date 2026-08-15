@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Delete note — ULAB StudyConnect{% endblock %}
+{% block title %}Delete — ULAB StudyConnect{% endblock %}
 {% block content %}
 <div class="notes-hub-page reveal">
   <nav class="breadcrumb breadcrumb-premium" aria-label="Breadcrumb">
@@ -8,6 +8,16 @@
     <span class="breadcrumb-current">Delete</span>
   </nav>
   <div class="confirm-card">
+    {% if pdf %}
+    <div class="confirm-icon"><i class="fa-solid fa-file-pdf"></i></div>
+    <h1>Delete this PDF?</h1>
+    <p><strong>{{ pdf.title }}</strong> will be removed. The note itself is kept.</p>
+    <form method="post" data-confirm="Delete this PDF?" class="confirm-actions">
+      {% csrf_token %}
+      <a href="{% if pdf.note %}{% url 'notes:note_detail' pdf.note.pk %}{% else %}{% url 'notes:note_list' %}{% endif %}" class="btn-ghost">Cancel</a>
+      <button type="submit" class="btn-danger">Delete PDF</button>
+    </form>
+    {% else %}
     <div class="confirm-icon"><i class="fa-solid fa-note-sticky"></i></div>
     <h1>Delete this note?</h1>
     <p>{{ note.title }} will be removed from your notebook.</p>
@@ -16,6 +26,7 @@
       <a href="{% url 'notes:note_list' %}" class="btn-ghost">Cancel</a>
       <button type="submit" class="btn-danger">Delete note</button>
     </form>
+    {% endif %}
   </div>
 </div>
 {% endblock %}

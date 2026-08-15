@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import date
 
 from django.contrib import messages
@@ -10,12 +11,57 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import DeleteView, FormView, ListView
 
-from routines.models import SavedRoutine
+from routines.models import Exam, RoutineFile, SavedRoutine
 from routines.utils import normalize_course
 
 from .forms import StudyPlanForm
 from .models import CoursePlan, DailyTask, StudyPlan
-from .study_plan import build_study_plan, exams_to_subjects
+from .study_plan import build_study_plan
+
+
+COURSE_CODE_RE = re.compile(r"^[A-Z]{2,5}\d{3,5}$", re.I)
+
+
+def _looks_like_course(code: str) -> bool:
+    compact = (code or "").replace(" ", "").replace("-", "")
+    return bool(COURSE_CODE_RE.match(compact))
+
+
+def _dedupe_exams(exams):
+    by_code = {}
+    for e in exams:
+        key = normalize_course(e.course_code)
+        if not key:
+            continue
+        prev = by_code.get(key)
+        if prev is None or e.exam_date < prev.exam_date:
+            by_code[key] = e
+    return list(by_code.values())
+
+
+def _exams_for_choice(user, routine_val):
+    kind, _, raw_id = str(routine_val).partition(":")
+    try:
+        pk = int(raw_id)
+    except (TypeError, ValueError):
+        return None, []
+
+    if kind == "saved":
+        saved = SavedRoutine.objects.filter(pk=pk, user=user).first()
+        if not saved:
+            return None, []
+        return saved, list(saved.exams.all().select_related("course"))
+
+    if kind == "official":
+        official = RoutineFile.objects.filter(pk=pk).first()
+        if not official:
+            return None, []
+        return official, list(
+            Exam.objects.filter(routine_file=official)
+            .select_related("course")
+            .order_by("exam_date", "course_code")
+        )
+    return None, []
 
 
 class StudyPlannerView(LoginRequiredMixin, FormView):
@@ -31,81 +77,88 @@ class StudyPlannerView(LoginRequiredMixin, FormView):
         routine_val = form.cleaned_data["routine"]
         hrs = float(form.cleaned_data["hours_per_day"])
         start = form.cleaned_data.get("start_date") or date.today()
+        end = form.cleaned_data.get("end_date")
 
-        if not str(routine_val).startswith("saved:"):
-            messages.error(self.request, "Invalid saved routine selected.")
-            return self.form_invalid(form)
-        try:
-            saved_id = routine_val.split(":")[1]
-            saved_routine = SavedRoutine.objects.get(pk=saved_id, user=self.request.user)
-        except (SavedRoutine.DoesNotExist, ValueError, IndexError):
-            messages.error(self.request, "Invalid saved routine selected.")
+        source, exam_list = _exams_for_choice(self.request.user, routine_val)
+        if source is None:
+            messages.error(self.request, "Could not load that routine. Upload or save one from Exam Routines.")
             return self.form_invalid(form)
 
-        routine_obj = saved_routine
-        exam_qs = saved_routine.exams.all().select_related("course")
+        selected_codes = [
+            normalize_course(c) for c in self.request.POST.getlist("course_code[]") if c.strip()
+        ]
+        code_filter = (self.request.POST.get("course_filter") or "").strip()
+        typed = [normalize_course(p) for p in code_filter.replace(",", " ").split() if p.strip()]
+        code_list = selected_codes or typed
+        pairs: list[tuple[str, str, int]] = [(code, "", 3) for code in code_list]
 
-        code_list = self.request.POST.getlist("course_code[]")
-        section_list = self.request.POST.getlist("section[]")
-        strength_list = self.request.POST.getlist("strength[]")
-        pairs: list[tuple[str, str, int]] = []
-        max_len = max(len(code_list), len(section_list), len(strength_list)) if (code_list or section_list or strength_list) else 0
-        for i in range(max_len):
-            code = normalize_course(code_list[i] if i < len(code_list) else "")
-            section = (section_list[i] if i < len(section_list) else "").strip()
-            try:
-                strength = int(strength_list[i]) if i < len(strength_list) else 3
-            except (ValueError, TypeError):
-                strength = 3
-            if code:
-                pairs.append((code, section, strength))
+        catalog = _dedupe_exams([e for e in exam_list if _looks_like_course(e.course_code)] or exam_list)
 
         if pairs:
-            exams = list(exam_qs)
-            exam_qs = []
-            for e in exams:
-                match = next((p for p in pairs if normalize_course(e.course_code) == p[0] and (not p[1] or e.section == p[1])), None)
-                if match:
-                    e.user_strength = match[2]
-                    exam_qs.append(e)
+            filtered = []
+            for e in catalog:
+                if any(normalize_course(e.course_code) == p[0] for p in pairs):
+                    e.user_strength = 3
+                    filtered.append(e)
+            if not filtered:
+                messages.error(
+                    self.request,
+                    "No exams matched the courses you selected. Pick courses from the list.",
+                )
+                return self.form_invalid(form)
+            exam_list = filtered
+        else:
+            exam_list = catalog
 
-        if not (len(exam_qs) if isinstance(exam_qs, list) else exam_qs.exists()):
-            exam_qs = saved_routine.exams.all().select_related("course")
+        exam_list = _dedupe_exams(exam_list)
+        if not exam_list:
+            messages.error(self.request, "This routine has no exam rows to plan from.")
+            return self.form_invalid(form)
 
         subjects = []
-        for ex in exam_qs:
-            diff = getattr(ex, 'user_strength', 3)
-            subjects.append({
-                "course_code": ex.course_code,
-                "exam_date": ex.exam_date,
-                "difficulty": diff,
-            })
+        for ex in exam_list:
+            diff = getattr(ex, "user_strength", None)
+            if diff is None:
+                diff = ex.course.difficulty if ex.course_id else 3
+            subjects.append(
+                {
+                    "course_code": ex.course_code,
+                    "exam_date": ex.exam_date,
+                    "difficulty": diff,
+                }
+            )
 
-        plan, logs = build_study_plan(subjects, hours_per_day=hrs, start_date=start)
-
+        plan, logs = build_study_plan(
+            subjects,
+            hours_per_day=hrs,
+            start_date=start,
+            end_date=end,
+        )
         plan_days = sorted(plan.items())
 
         nearest_exam_days = None
-        if exam_qs:
-            days_list = []
-            for ex in exam_qs:
-                if hasattr(ex, 'days_until_exam') and ex.days_until_exam is not None:
-                    if ex.days_until_exam >= 0:
-                        days_list.append(ex.days_until_exam)
-            if days_list:
-                nearest_exam_days = min(days_list)
+        days_list = [ex.days_until_exam for ex in exam_list if ex.days_until_exam is not None and ex.days_until_exam >= 0]
+        if days_list:
+            nearest_exam_days = min(days_list)
+
+        saved_pk = source.pk if isinstance(source, SavedRoutine) else ""
+        official_pk = source.pk if isinstance(source, RoutineFile) else ""
 
         return self.render_to_response(
             self.get_context_data(
                 form=form,
                 plan_days=plan_days,
                 logs=logs,
-                routine=routine_obj,
+                routine=source,
                 selected_pairs=pairs,
-                personal_exams=exam_qs,
+                personal_exams=exam_list,
                 nearest_exam_days=nearest_exam_days,
                 plan_start_date=start,
-                routine_id=routine_obj.pk,
+                plan_end_date=end,
+                hours_per_day=hrs,
+                routine_choice=routine_val,
+                saved_routine_id=saved_pk,
+                official_routine_id=official_pk,
             )
         )
 
@@ -115,39 +168,61 @@ class StudyPlannerView(LoginRequiredMixin, FormView):
         ctx.setdefault("logs", [])
 
         plan_id = self.request.GET.get("plan_id")
-        selected_pairs = []
+        selected_pairs = ctx.get("selected_pairs") or []
         if plan_id:
             try:
                 plan = StudyPlan.objects.get(pk=plan_id, user=self.request.user)
                 ctx["plan_id"] = plan.pk
                 ctx["plan_name"] = plan.name
                 if plan.routine:
-                    ctx["routine_id"] = plan.routine.pk
                     ctx["form"].fields["routine"].initial = f"saved:{plan.routine.pk}"
+                elif plan.official_routine:
+                    ctx["form"].fields["routine"].initial = f"official:{plan.official_routine.pk}"
 
-                first_task = DailyTask.objects.filter(course_plan__plan=plan).order_by('date').first()
+                first_task = DailyTask.objects.filter(course_plan__plan=plan).order_by("date").first()
+                last_task = DailyTask.objects.filter(course_plan__plan=plan).order_by("-date").first()
                 if first_task:
-                    ctx["form"].fields["start_date"].initial = first_task.date.strftime("%Y-%m-%d")
-                    day_total = sum(t.hours for t in DailyTask.objects.filter(course_plan__plan=plan, date=first_task.date))
+                    ctx["form"].fields["start_date"].initial = first_task.date
+                    day_total = sum(
+                        t.hours
+                        for t in DailyTask.objects.filter(course_plan__plan=plan, date=first_task.date)
+                    )
                     ctx["form"].fields["hours_per_day"].initial = day_total
+                if last_task:
+                    ctx["form"].fields["end_date"].initial = last_task.date
 
+                selected_pairs = []
+                rating_map = {"weak": 1, "medium": 3, "hard": 5}
                 for cp in plan.course_plans.all():
-                    selected_pairs.append({
-                        "code": cp.course_code,
-                        "strength": 3
-                    })
-
-                for i, pair in enumerate(selected_pairs):
-                    cp = plan.course_plans.filter(course_code=pair["code"]).first()
-                    if cp:
-                        rating_map = {"weak": 1, "medium": 3, "hard": 5}
-                        selected_pairs[i]["strength"] = rating_map.get(cp.rating, 3)
-
+                    selected_pairs.append(
+                        {"code": cp.course_code, "strength": rating_map.get(cp.rating, 3)}
+                    )
             except StudyPlan.DoesNotExist:
                 pass
 
         ctx.setdefault("selected_pairs", selected_pairs)
         ctx["saved_routines"] = SavedRoutine.objects.filter(user=self.request.user)
+        ctx["official_routines"] = RoutineFile.objects.filter(is_active=True).order_by("-uploaded_at")[:10]
+
+        routine_val = (
+            self.request.POST.get("routine")
+            or self.request.GET.get("routine")
+            or ""
+        )
+        form = ctx.get("form")
+        if not routine_val and form:
+            choices = list(form.fields["routine"].choices)
+            if choices and choices[0][0]:
+                routine_val = choices[0][0]
+        source, raw_exams = _exams_for_choice(self.request.user, routine_val) if routine_val else (None, [])
+        catalog = _dedupe_exams([e for e in raw_exams if _looks_like_course(e.course_code)] or raw_exams)
+        catalog.sort(key=lambda e: (e.course_code or "", e.exam_date))
+        ctx["available_courses"] = catalog
+        ctx["available_course_count"] = len(catalog)
+        ctx["selected_course_set"] = {
+            normalize_course(p[0] if isinstance(p, (list, tuple)) else str(p))
+            for p in selected_pairs
+        }
         return ctx
 
 
@@ -306,7 +381,8 @@ class DailyTaskToggleView(LoginRequiredMixin, View):
 class StudyPlanCreateView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         name = request.POST.get("name", "My Study Plan").strip()
-        routine_id = request.POST.get("routine_id")
+        saved_id = request.POST.get("saved_routine_id") or None
+        official_id = request.POST.get("official_routine_id") or None
         plan_id = request.POST.get("plan_id")
 
         course_codes = request.POST.getlist("course_code[]")
@@ -321,14 +397,16 @@ class StudyPlanCreateView(LoginRequiredMixin, View):
             if plan_id:
                 plan = get_object_or_404(StudyPlan, pk=plan_id, user=request.user)
                 plan.name = name
-                plan.routine_id = routine_id if routine_id else None
+                plan.routine_id = saved_id or None
+                plan.official_routine_id = official_id or None
                 plan.save()
                 plan.course_plans.all().delete()
             else:
                 plan = StudyPlan.objects.create(
                     user=request.user,
                     name=name,
-                    routine_id=routine_id if routine_id else None
+                    routine_id=saved_id or None,
+                    official_routine_id=official_id or None,
                 )
 
             course_plan_map = {}

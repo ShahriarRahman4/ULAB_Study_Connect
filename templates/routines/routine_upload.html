@@ -1,20 +1,20 @@
 {% extends "base.html" %}
-{% block title %}Upload Routine — ULAB StudyConnect{% endblock %}
+{% block title %}{% if is_update %}Update routine{% else %}Upload routine{% endif %} — ULAB StudyConnect{% endblock %}
 {% block content %}
 <div class="forum-page">
   <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
     <a href="{% url 'routines:routine_list' %}"><i class="fa-solid fa-calendar-days"></i> Routines</a>
     <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-    <span class="breadcrumb-current">Upload</span>
+    <span class="breadcrumb-current">{% if is_update %}Update{% else %}Upload{% endif %}</span>
   </nav>
 
   <div class="pdf-upload-hero reveal">
     <div class="pdf-upload-hero-bg" aria-hidden="true"></div>
     <div class="pdf-upload-hero-inner">
       <div>
-        <span class="section-label"><i class="fa-solid fa-upload"></i> Import</span>
-        <h1 class="pdf-upload-title">Upload exam<br><span class="text-gradient">routine</span></h1>
-        <p class="pdf-upload-desc">Import an official spreadsheet so students can filter by course and section.</p>
+        <span class="section-label"><i class="fa-solid fa-{% if is_update %}pen-to-square{% else %}upload{% endif %}"></i> {% if is_update %}Replace{% else %}Import{% endif %}</span>
+        <h1 class="pdf-upload-title">{% if is_update %}Update exam<br><span class="text-gradient">routine</span>{% else %}Upload exam<br><span class="text-gradient">routine</span>{% endif %}</h1>
+        <p class="pdf-upload-desc">{% if is_update %}Change the title or upload a new spreadsheet. A new file replaces all exam rows for this routine.{% else %}Import an official spreadsheet so students can filter by course and section.{% endif %}</p>
       </div>
     </div>
   </div>
@@ -29,8 +29,11 @@
         {{ form.title.errors }}
       </div>
       <div class="pdf-field">
-        <label class="label-premium" for="{{ form.file.id_for_label }}">Spreadsheet</label>
+        <label class="label-premium" for="{{ form.file.id_for_label }}">Spreadsheet{% if is_update %} <span style="font-weight:500;color:#94a3b8;">(optional)</span>{% endif %}</label>
         {{ form.file }}
+        {% if is_update and routine.file %}
+        <p style="margin-top:8px;font-size:0.82rem;color:#64748b;">Current file: {{ routine.file.name }}</p>
+        {% endif %}
         {{ form.file.errors }}
       </div>
       <div class="pdf-field">
@@ -38,17 +41,20 @@
         {{ form.notes }}
       </div>
       <div class="pdf-form-actions">
-        <a href="{% url 'routines:routine_list' %}" class="btn-ghost">Cancel</a>
-        <button class="btn-primary" type="submit"><i class="fa-solid fa-cloud-arrow-up"></i> Upload routine</button>
+        <a href="{% if routine %}{% url 'routines:routine_detail' routine.pk %}{% else %}{% url 'routines:routine_list' %}{% endif %}" class="btn-ghost">Cancel</a>
+        <button class="btn-primary" type="submit">
+          <i class="fa-solid fa-{% if is_update %}floppy-disk{% else %}cloud-arrow-up{% endif %}"></i>
+          {% if is_update %}Save changes{% else %}Upload routine{% endif %}
+        </button>
       </div>
     </form>
     <aside>
       <div class="note-sidebar-card">
         <h3>Expected columns</h3>
         <ul class="pdf-tips">
-          <li>Course code, section, date, time</li>
-          <li>Room and faculty name</li>
-          <li>One row per exam sitting</li>
+          <li>ULAB grid: dates in the first column, time slots across the top, cells like <code>CSE 310 - 01 - A-301 - Faculty</code></li>
+          <li>Or a table with Course Code, Section, Date, Time, Room, Faculty</li>
+          <li>Excel <code>.xlsx</code> files work best</li>
         </ul>
       </div>
     </aside>

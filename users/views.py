@@ -59,11 +59,6 @@ class TeamView(TemplateView):
 class HomeView(TemplateView):
     template_name = "users/home.html"
 
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated:
-            return redirect("users:dashboard")
-        return super().dispatch(request, *args, **kwargs)
-
 
 class DashboardView(LoginRequiredMixin, TemplateView):
     template_name = "users/dashboard.html"

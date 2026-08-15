@@ -5,8 +5,6 @@
   <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
     <a href="{% url 'notes:note_list' %}">My notes</a>
     <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-    <a href="{% url 'notes:public_notes' %}">Week 4 — Recursion</a>
-    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
     <span class="breadcrumb-current">Practice quiz</span>
   </nav>
 
@@ -16,31 +14,58 @@
       <div>
         <span class="section-label"><i class="fa-solid fa-circle-question"></i> Quiz</span>
         <h1 class="pdf-upload-title">Practice quiz</h1>
-        <p class="pdf-upload-desc">Test your understanding of Week 4 — Recursion. Demo check stays on this page.</p>
+        <p class="pdf-upload-desc">Generate questions from a note, PDF, or pasted text.</p>
       </div>
     </div>
   </div>
 
-  <form id="quiz-form" class="quiz-panel reveal">
-    <fieldset class="quiz-q">
-      <legend>1. What stops a recursive function from calling itself forever?</legend>
-      <label class="quiz-option"><input type="radio" name="q1" value="a"> A loop counter</label>
-      <label class="quiz-option"><input type="radio" name="q1" value="b"> The base case</label>
-      <label class="quiz-option"><input type="radio" name="q1" value="c"> Garbage collection</label>
-    </fieldset>
-    <fieldset class="quiz-q">
-      <legend>2. Naive recursive Fibonacci is slow because it…</legend>
-      <label class="quiz-option"><input type="radio" name="q2" value="a"> Uses too much disk</label>
-      <label class="quiz-option"><input type="radio" name="q2" value="b"> Recomputes overlapping subproblems</label>
-    </fieldset>
-    <button class="btn-primary" type="submit"><i class="fa-solid fa-check"></i> Check answers</button>
+  <form method="post" class="pdf-upload-form reveal" style="max-width:720px;">
+    {% csrf_token %}
+    <div class="pdf-field">
+      <label class="label-premium" for="note_id">From a note</label>
+      <select name="note_id" id="note_id" class="select-premium">
+        <option value="">— paste text instead —</option>
+        {% for n in notes %}
+        <option value="{{ n.pk }}" {% if request.GET.note_id == n.pk|stringformat:"s" %}selected{% endif %}>{{ n.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="pdf-field">
+      <label class="label-premium" for="pdf_id">From a PDF</label>
+      <select name="pdf_id" id="pdf_id" class="select-premium">
+        <option value="">— none —</option>
+        {% for p in pdfs %}
+        <option value="{{ p.pk }}">{{ p.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="pdf-field">
+      <label class="label-premium">Or paste text</label>
+      {{ form.text }}
+    </div>
+    <button class="btn-primary" type="submit"><i class="fa-solid fa-circle-question"></i> Generate quiz</button>
   </form>
 
+  {% if quiz %}
+  <form id="quiz-form" data-score="1" class="quiz-panel reveal" style="margin-top:24px;">
+    {% for q in quiz.mcqs %}
+    <fieldset class="quiz-q">
+      <legend>{{ forloop.counter }}. {{ q.question }}</legend>
+      {% for choice in q.choices %}
+      <label class="quiz-option"><input type="radio" name="q{{ forloop.parentloop.counter }}" value="{{ forloop.counter0 }}" {% if forloop.counter0 == q.answer_index %}data-correct="1"{% endif %}> {{ choice }}</label>
+      {% endfor %}
+    </fieldset>
+    {% empty %}
+    <p>Not enough text to build multiple-choice questions. Add more note content and try again.</p>
+    {% endfor %}
+    {% if quiz.mcqs %}
+    <button class="btn-primary" type="submit"><i class="fa-solid fa-check"></i> Check answers</button>
+    {% endif %}
+  </form>
   <div id="quiz-result" class="ai-summary-card hidden" style="margin-top:20px;">
-    <div class="ai-summary-badge"><i class="fa-solid fa-trophy"></i> Demo result</div>
-    <p class="quiz-score">You got <strong>2 / 2</strong> in this preview.</p>
-    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:16px;">Correct: base case · overlapping subproblems.</p>
-    <a href="{% url 'notes:public_notes' %}" class="btn-outline">Back to note</a>
+    <div class="ai-summary-badge"><i class="fa-solid fa-trophy"></i> Result</div>
+    <p class="quiz-score">You got <strong id="quiz-score-text">0 / 0</strong>.</p>
   </div>
+  {% endif %}
 </div>
 {% endblock %}

@@ -2,23 +2,34 @@
 {% block title %}Save routine — ULAB StudyConnect{% endblock %}
 {% block content %}
 <div class="routine-page">
+  <nav class="breadcrumb breadcrumb-premium" aria-label="Breadcrumb">
+    <a href="{% url 'routines:routine_list' %}">Routines</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <span class="breadcrumb-current">Save</span>
+  </nav>
   <h1 class="resources-hero-title">Save a personal routine</h1>
+  <p class="resources-hero-desc">{{ exam_total }} matching exam{{ exam_total|pluralize }}{% if routine_file %} from {{ routine_file.title }}{% endif %}.</p>
   <form method="post" class="pdf-upload-form" style="margin-top:1.5rem;">
     {% csrf_token %}
+    {% if save_all %}<input type="hidden" name="save_all" value="1">{% endif %}
     <div class="pdf-field">
       <label class="label-premium" for="name">Name</label>
       <input id="name" name="name" class="input-premium no-icon" value="{{ initial_name }}" required>
     </div>
+    {% if save_all %}
+    <p>All {{ exam_total }} exams in this file will be saved (too many to list here).</p>
+    {% else %}
     <div class="pdf-field">
       {% for exam in exams %}
       <label class="about-value-card" style="display:flex;gap:12px;align-items:flex-start;margin-bottom:8px;">
-        <input type="checkbox" name="exam_ids[]" value="{{ exam.pk }}" {% if exam.pk in selected_exam_ids %}checked{% endif %}>
+        <input type="checkbox" name="exam_ids[]" value="{{ exam.pk }}" checked>
         <span><strong>{{ exam.course_code }}</strong> Sec {{ exam.section }} — {{ exam.exam_date }} {{ exam.exam_time }}</span>
       </label>
       {% empty %}
       <p>No exams to save.</p>
       {% endfor %}
     </div>
+    {% endif %}
     <button type="submit" class="btn-primary">Save routine</button>
   </form>
 </div>

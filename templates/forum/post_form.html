@@ -14,8 +14,8 @@
     <div class="pdf-upload-hero-inner">
       <div>
         <span class="section-label"><i class="fa-solid fa-pen-to-square"></i> New thread</span>
-        <h1 class="pdf-upload-title">Start a conversation<br><span class="text-gradient">the community can find</span></h1>
-        <p class="pdf-upload-desc">Pick a subject, choose question vs discussion, then write a clear title. Specific posts get better answers.</p>
+        <h1 class="pdf-upload-title">Write in<br><span class="text-gradient">plain text</span></h1>
+        <p class="pdf-upload-desc">Title, topic, and your message — no formatting required. What you type is what others read.</p>
       </div>
     </div>
   </div>
@@ -24,10 +24,15 @@
     <form method="post" class="pdf-upload-form">
       {% csrf_token %}
       {{ form.non_field_errors }}
+      <div class="pdf-field">
+        <label class="label-premium" for="{{ form.title.id_for_label }}">Title</label>
+        {{ form.title }}
+        {{ form.title.errors }}
+      </div>
       <div class="pdf-field forum-form-grid">
         <div>
-          <label class="label-premium" for="{{ form.subject.id_for_label }}">Subject</label>
-          {{ form.subject }}
+          <label class="label-premium" for="{{ form.subject_text.id_for_label }}">Topic (optional)</label>
+          {{ form.subject_text }}
         </div>
         <div>
           <label class="label-premium" for="{{ form.post_type.id_for_label }}">Type</label>
@@ -35,16 +40,7 @@
         </div>
       </div>
       <div class="pdf-field">
-        <label class="label-premium" for="{{ form.category.id_for_label }}">Category</label>
-        {{ form.category }}
-      </div>
-      <div class="pdf-field">
-        <label class="label-premium" for="{{ form.title.id_for_label }}">Title</label>
-        {{ form.title }}
-        {{ form.title.errors }}
-      </div>
-      <div class="pdf-field">
-        <label class="label-premium" for="{{ form.body.id_for_label }}">Details</label>
+        <label class="label-premium" for="{{ form.body.id_for_label }}">Your text</label>
         {{ form.body }}
         {{ form.body.errors }}
       </div>
@@ -58,14 +54,10 @@
       <div class="note-sidebar-card">
         <h3>Write a strong post</h3>
         <ul class="pdf-tips">
-          <li>Put the course code in the title when it helps.</li>
-          <li>Show the exact formula, error, or example.</li>
-          <li>Questions get answers; discussions share opinions.</li>
+          <li>Use a short, specific title.</li>
+          <li>Write the full question or discussion in the text box.</li>
+          <li>Plain text only — line breaks are kept.</li>
         </ul>
-      </div>
-      <div class="note-sidebar-card">
-        <h3>After you publish</h3>
-        <p class="pdf-aside-copy">You'll land on the thread page where others can vote and reply. Demo flow stays on this static site.</p>
       </div>
     </aside>
   </div>

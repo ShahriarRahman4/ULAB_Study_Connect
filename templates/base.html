@@ -40,6 +40,7 @@
       </a>
       <nav class="nav-links" aria-label="Main">
         {% if user.is_authenticated %}
+          <a href="{% url 'users:home' %}" class="nav-link"><span class="nav-link-bg" aria-hidden="true"></span><span class="nav-link-text">Home</span></a>
           <a href="{% url 'users:dashboard' %}" class="nav-link"><span class="nav-link-bg" aria-hidden="true"></span><span class="nav-link-text">Dashboard</span></a>
           <a href="{% url 'routines:routine_list' %}" class="nav-link"><span class="nav-link-bg" aria-hidden="true"></span><span class="nav-link-text">Routines</span></a>
           <a href="{% url 'planner:study_planner' %}" class="nav-link"><span class="nav-link-bg" aria-hidden="true"></span><span class="nav-link-text">Planner</span></a>
@@ -51,21 +52,32 @@
             </div>
           </div>
           <a href="{% url 'forum:feed' %}" class="nav-link"><span class="nav-link-bg" aria-hidden="true"></span><span class="nav-link-text">Forum</span></a>
+          <a href="{% url 'chatbot:chat' %}" class="nav-link"><span class="nav-link-bg" aria-hidden="true"></span><span class="nav-link-text">Nova AI</span></a>
+          <div class="nav-dropdown nav-dropdown-profile">
+            <button type="button" class="nav-link nav-link-dropdown" aria-haspopup="true">
+              <span class="nav-link-bg" aria-hidden="true"></span>
+              <span class="nav-link-text nav-link-text-dropdown">
+                <i class="fa-solid fa-circle-user"></i> Profile <i class="fa-solid fa-chevron-down nav-chevron"></i>
+              </span>
+            </button>
+            <div class="nav-dropdown-panel">
+              <a href="{% url 'users:profile' %}"><i class="fa-solid fa-user"></i> Profile</a>
+              <form action="{% url 'users:logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="nav-dropdown-logout"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+              </form>
+            </div>
+          </div>
         {% else %}
           <a href="{% url 'users:home' %}" class="nav-link"><span class="nav-link-bg" aria-hidden="true"></span><span class="nav-link-text">Home</span></a>
           <a href="{% url 'notes:public_notes' %}" class="nav-link"><span class="nav-link-bg" aria-hidden="true"></span><span class="nav-link-text">Resources</span></a>
           <a href="{% url 'forum:feed' %}" class="nav-link"><span class="nav-link-bg" aria-hidden="true"></span><span class="nav-link-text">Forum</span></a>
           <a href="{% url 'users:about' %}" class="nav-link"><span class="nav-link-bg" aria-hidden="true"></span><span class="nav-link-text">About</span></a>
+          <a href="{% url 'chatbot:chat' %}" class="nav-link"><span class="nav-link-bg" aria-hidden="true"></span><span class="nav-link-text">Nova AI</span></a>
         {% endif %}
       </nav>
       <div class="nav-actions">
-        {% if user.is_authenticated %}
-          <a href="{% url 'users:profile' %}" class="btn-ghost btn-nav-profile hidden md:inline-flex" title="Profile"><i class="fa-solid fa-circle-user"></i></a>
-          <form action="{% url 'users:logout' %}" method="post" class="hidden md:inline-flex">
-            {% csrf_token %}
-            <button type="submit" class="btn-outline btn-nav-outline" style="padding:8px 16px;font-size:0.8rem;">Logout</button>
-          </form>
-        {% else %}
+        {% if not user.is_authenticated %}
           <a href="{% url 'users:login' %}" class="btn-ghost btn-nav-ghost hidden md:inline-flex"><span>Sign in</span></a>
           <a href="{% url 'users:register' %}" class="btn-primary btn-nav-cta"><span class="btn-shine" aria-hidden="true"></span><span class="btn-label">Get started</span></a>
         {% endif %}
@@ -75,13 +87,15 @@
       </div>
     </div>
     <div id="mobile-menu" class="mobile-menu" role="navigation" aria-label="Mobile">
-      {% if user.is_authenticated %}
+        {% if user.is_authenticated %}
+        <a href="{% url 'users:home' %}">Home</a>
         <a href="{% url 'users:dashboard' %}">Dashboard</a>
         <a href="{% url 'routines:routine_list' %}">Exam Routines</a>
         <a href="{% url 'planner:study_planner' %}">Study Planner</a>
         <a href="{% url 'notes:note_list' %}">My Notes</a>
         <a href="{% url 'notes:public_notes' %}">Public Notes</a>
         <a href="{% url 'forum:feed' %}">Forum</a>
+        <a href="{% url 'chatbot:chat' %}">Nova AI</a>
         <a href="{% url 'users:profile' %}">Profile</a>
         <form action="{% url 'users:logout' %}" method="post" style="margin-top:12px;">
           {% csrf_token %}
@@ -92,6 +106,7 @@
         <a href="{% url 'notes:public_notes' %}">Resources</a>
         <a href="{% url 'forum:feed' %}">Forum</a>
         <a href="{% url 'users:about' %}">About</a>
+        <a href="{% url 'chatbot:chat' %}">Nova AI</a>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;">
           <a href="{% url 'users:login' %}" class="btn-outline" style="text-align:center;">Sign in</a>
           <a href="{% url 'users:register' %}" class="btn-primary" style="text-align:center;">Register</a>
@@ -131,6 +146,7 @@
         <a href="{% url 'planner:study_planner' %}">Study Planner</a>
         <a href="{% url 'notes:public_notes' %}">Resources</a>
         <a href="{% url 'forum:feed' %}">Forum</a>
+        <a href="{% url 'chatbot:chat' %}">Nova AI</a>
       </div>
       <div class="footer-col">
         <h4>Company</h4>
@@ -153,6 +169,87 @@
   </footer>
 
   <script src="{% static 'js/main.js' %}"></script>
+  {% if "/chat" not in request.path %}
+  <div class="nova-fab-wrap" id="nova-fab-wrap">
+    <button type="button" class="nova-fab" id="nova-fab" aria-label="Open Nova AI">
+      <i class="fa-solid fa-brain"></i>
+    </button>
+    <div class="nova-dock hidden" id="nova-dock">
+      <header class="nova-dock-head">
+        <div class="nova-avatar"><i class="fa-solid fa-sparkles"></i></div>
+        <div>
+          <strong>Nova</strong>
+          <span>AI study tutor</span>
+        </div>
+        <a href="{% url 'chatbot:chat' %}" class="btn-ghost" title="Full screen"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></a>
+        <button type="button" class="btn-ghost" id="nova-dock-close" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+      </header>
+      <div class="nova-thread nova-thread-dock" id="nova-dock-thread">
+        <div class="nova-empty nova-empty-sm">
+          <p>Ask about CSE 310, your planner, or exam tactics.</p>
+        </div>
+      </div>
+      <form class="nova-composer nova-composer-dock" id="nova-dock-form">
+        {% csrf_token %}
+        <input id="nova-dock-input" maxlength="4000" placeholder="Message Nova…" autocomplete="off">
+        <button type="submit" class="nova-send-icon" aria-label="Send"><i class="fa-solid fa-paper-plane"></i></button>
+      </form>
+    </div>
+  </div>
+  <script>
+  (function () {
+    var fab = document.getElementById("nova-fab");
+    var dock = document.getElementById("nova-dock");
+    var closeBtn = document.getElementById("nova-dock-close");
+    var form = document.getElementById("nova-dock-form");
+    var input = document.getElementById("nova-dock-input");
+    var thread = document.getElementById("nova-dock-thread");
+    if (!fab || !dock || !form) return;
+    var csrfEl = form.querySelector("[name=csrfmiddlewaretoken]");
+    var csrf = csrfEl ? csrfEl.value : "";
+    fab.addEventListener("click", function () {
+      dock.classList.toggle("hidden");
+      if (!dock.classList.contains("hidden")) input.focus();
+    });
+    if (closeBtn) closeBtn.addEventListener("click", function () { dock.classList.add("hidden"); });
+    function esc(s) {
+      return s.replace(/[&<>"']/g, function (c) {
+        return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c];
+      });
+    }
+    function fmt(s) {
+      return esc(s).replace(/\n/g, "<br>");
+    }
+    function add(role, text, html) {
+      var empty = thread.querySelector(".nova-empty");
+      if (empty) empty.remove();
+      var d = document.createElement("div");
+      d.className = "nova-bubble nova-bubble-" + role;
+      d.innerHTML = '<div class="nova-bubble-body">' + (html || fmt(text || "")) + "</div>";
+      thread.appendChild(d);
+      thread.scrollTop = thread.scrollHeight;
+      return d;
+    }
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var text = input.value.trim();
+      if (!text) return;
+      input.value = "";
+      add("user", text);
+      var t = add("assistant", "…");
+      fetch("{% url 'chatbot:api' %}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": csrf },
+        body: JSON.stringify({ message: text })
+      }).then(function (r) { return r.json(); }).then(function (data) {
+        t.querySelector(".nova-bubble-body").innerHTML = (data && data.reply_html) || fmt((data && data.reply) || "Try again.");
+      }).catch(function () {
+        t.querySelector(".nova-bubble-body").textContent = "Couldn't reach Nova.";
+      });
+    });
+  })();
+  </script>
+  {% endif %}
   {% block extra_js %}{% endblock %}
 </body>
 </html>

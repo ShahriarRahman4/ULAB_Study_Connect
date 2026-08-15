@@ -25,34 +25,27 @@
   </div>
 
   <div class="blog-grid reveal">
+    {% for plan in plans %}
     <article class="blog-card" style="padding:0;">
       <div class="blog-card-body">
         <div class="blog-card-meta">
-          <span class="badge badge-indigo">4 courses</span>
-          <span class="badge badge-cyan">12 days</span>
+          <span class="badge badge-indigo">{{ plan.course_plans.count }} course{{ plan.course_plans.count|pluralize }}</span>
+          <span class="badge badge-cyan">{{ plan.total_progress }}% done</span>
         </div>
-        <h3>Finals Prep</h3>
-        <p>Spring 2026 finals with a balanced daily workload — 4 hours/day.</p>
+        <h3>{{ plan.name }}</h3>
+        <p>
+          {% if plan.start_date %}{{ plan.start_date|date:"M j" }}{% if plan.end_date %} – {{ plan.end_date|date:"M j" }}{% endif %}{% else %}No schedule dates{% endif %}
+          · {{ plan.total_tasks }} task{{ plan.total_tasks|pluralize }}
+        </p>
         <div class="resources-hero-actions" style="margin-top:16px;">
-          <a href="{% url 'planner:study_planner' %}" class="btn-primary" style="padding:8px 14px;font-size:0.8rem;">Open</a>
-          <a href="/planner/study_plan_confirm_delete.html" class="btn-ghost" style="padding:8px 14px;font-size:0.8rem;color:#dc2626;">Delete</a>
+          <a href="{% url 'planner:study_planner' %}?plan_id={{ plan.pk }}" class="btn-primary" style="padding:8px 14px;font-size:0.8rem;">Open</a>
+          <a href="{% url 'planner:study_plan_delete' plan.pk %}" class="btn-ghost" style="padding:8px 14px;font-size:0.8rem;color:#dc2626;">Delete</a>
         </div>
       </div>
     </article>
-    <article class="blog-card" style="padding:0;">
-      <div class="blog-card-body">
-        <div class="blog-card-meta">
-          <span class="badge badge-indigo">3 courses</span>
-          <span class="badge badge-amber">7 days</span>
-        </div>
-        <h3>Midterm Sprint</h3>
-        <p>Focused CSE midterm preparation from your saved CSE Midterms routine.</p>
-        <div class="resources-hero-actions" style="margin-top:16px;">
-          <a href="{% url 'planner:study_planner' %}" class="btn-primary" style="padding:8px 14px;font-size:0.8rem;">Open</a>
-          <a href="/planner/study_plan_confirm_delete.html" class="btn-ghost" style="padding:8px 14px;font-size:0.8rem;color:#dc2626;">Delete</a>
-        </div>
-      </div>
-    </article>
+    {% empty %}
+    <p>No saved plans yet. Generate one from an uploaded exam routine.</p>
+    {% endfor %}
   </div>
 </div>
 {% endblock %}

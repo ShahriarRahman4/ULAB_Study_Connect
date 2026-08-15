@@ -5,8 +5,6 @@
   <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
     <a href="{% url 'notes:note_list' %}">My notes</a>
     <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-    <a href="{% url 'notes:public_notes' %}">Week 4 — Recursion</a>
-    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
     <span class="breadcrumb-current">AI Summary</span>
   </nav>
 
@@ -15,23 +13,60 @@
     <div class="pdf-upload-hero-inner">
       <div>
         <span class="section-label"><i class="fa-solid fa-wand-magic-sparkles"></i> AI</span>
-        <h1 class="pdf-upload-title">Summary of<br><span class="text-gradient">Week 4 — Recursion</span></h1>
-        <p class="pdf-upload-desc">Key takeaways generated from your note — demo content for the hackathon preview.</p>
+        <h1 class="pdf-upload-title">Summarize your<br><span class="text-gradient">notes or PDF</span></h1>
+        <p class="pdf-upload-desc">Pick a note or PDF, or paste text. The summary is generated on the server.</p>
       </div>
     </div>
   </div>
 
-  <div class="ai-summary-card reveal">
+  <form method="post" class="pdf-upload-form reveal" style="max-width:720px;">
+    {% csrf_token %}
+    <div class="pdf-field">
+      <label class="label-premium" for="note_id">From a note</label>
+      <select name="note_id" id="note_id" class="select-premium">
+        <option value="">— paste text instead —</option>
+        {% for n in notes %}
+        <option value="{{ n.pk }}" {% if request.GET.note_id == n.pk|stringformat:"s" %}selected{% endif %}>{{ n.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="pdf-field">
+      <label class="label-premium" for="pdf_id">From a PDF</label>
+      <select name="pdf_id" id="pdf_id" class="select-premium">
+        <option value="">— none —</option>
+        {% for p in pdfs %}
+        <option value="{{ p.pk }}">{{ p.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="pdf-field">
+      <label class="label-premium">Or paste text</label>
+      {{ form.text }}
+    </div>
+    <button class="btn-primary" type="submit"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate summary</button>
+  </form>
+
+  {% if result %}
+  <div class="ai-summary-card reveal" style="margin-top:24px;">
     <div class="ai-summary-badge"><i class="fa-solid fa-brain"></i> Generated summary</div>
     <ul class="ai-summary-list">
-      <li>Recursion needs a <strong>base case</strong> and a strictly smaller recursive case.</li>
-      <li>Factorial, Fibonacci, binary search, and tree walks all follow this pattern.</li>
-      <li>Watch stack depth — naive Fibonacci is exponential without memoization.</li>
+      {% for bullet in result.summary_bullets %}
+      <li>{{ bullet }}</li>
+      {% empty %}
+      <li>Not enough text to summarize.</li>
+      {% endfor %}
     </ul>
+    {% if result.key_points %}
+    <h3 style="margin-top:16px;">Key points</h3>
+    <ul class="ai-summary-list">
+      {% for kp in result.key_points %}<li>{{ kp }}</li>{% endfor %}
+    </ul>
+    {% endif %}
     <div class="resources-hero-actions" style="margin-top:24px;">
-      <a href="{% url 'notes:public_notes' %}" class="btn-outline">Back to note</a>
+      <a href="{% url 'notes:note_list' %}" class="btn-outline">Back to notes</a>
       <a href="{% url 'notes:quiz' %}" class="btn-primary"><i class="fa-solid fa-circle-question"></i> Practice quiz</a>
     </div>
   </div>
+  {% endif %}
 </div>
 {% endblock %}

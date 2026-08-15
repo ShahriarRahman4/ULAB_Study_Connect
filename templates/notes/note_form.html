@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}New note — ULAB StudyConnect{% endblock %}
+{% block title %}{% if is_edit %}Edit note{% else %}New note{% endif %} — ULAB StudyConnect{% endblock %}
 {% block content %}
 <div class="forum-page">
   <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
@@ -7,28 +7,32 @@
     <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
     <a href="{% url 'notes:note_list' %}">My notes</a>
     <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-    <span class="breadcrumb-current">New note</span>
+    <span class="breadcrumb-current">{% if is_edit %}Edit{% else %}New note{% endif %}</span>
   </nav>
 
   <div class="pdf-upload-hero reveal">
     <div class="pdf-upload-hero-bg" aria-hidden="true"></div>
     <div class="pdf-upload-hero-inner">
       <div>
-        <span class="section-label"><i class="fa-solid fa-pen-to-square"></i> Create</span>
-        <h1 class="pdf-upload-title">Write a note<br><span class="text-gradient">your class can use</span></h1>
+        <span class="section-label"><i class="fa-solid fa-pen-to-square"></i> {% if is_edit %}Update{% else %}Create{% endif %}</span>
+        <h1 class="pdf-upload-title">{% if is_edit %}Edit your note{% else %}Write a note<br><span class="text-gradient">your class can use</span>{% endif %}</h1>
         <p class="pdf-upload-desc">Markdown-friendly. Public notes show up in the resource gallery.</p>
       </div>
     </div>
   </div>
 
   <div class="pdf-upload-layout reveal">
-    <form method="post" class="pdf-upload-form">
+    <form method="post" class="pdf-upload-form" enctype="multipart/form-data">
       {% csrf_token %}
       {{ form.non_field_errors }}
       <div class="pdf-field">
         <label class="label-premium" for="{{ form.title.id_for_label }}">Title</label>
         {{ form.title }}
         {{ form.title.errors }}
+      </div>
+      <div class="pdf-field">
+        <label class="label-premium" for="{{ form.course_text.id_for_label }}">Course</label>
+        {{ form.course_text }}
       </div>
       <div class="pdf-field">
         <label class="label-premium" for="{{ form.body_markdown.id_for_label }}">Content</label>
@@ -40,18 +44,28 @@
         {{ form.youtube_urls }}
       </div>
       <div class="pdf-field">
-        <label class="label-premium">{{ form.is_public }} Public note</label>
+        <label class="label-premium" for="{{ form.pdf_title.id_for_label }}">PDF title</label>
+        {{ form.pdf_title }}
+      </div>
+      <div class="pdf-field">
+        <label class="label-premium" for="{{ form.pdf_file.id_for_label }}">PDF file</label>
+        {{ form.pdf_file }}
+        {{ form.pdf_file.errors }}
+        <p style="font-size:0.8rem;color:#64748b;margin-top:6px;">Attach or replace a PDF. If this note is public, the PDF appears in the public gallery.</p>
+      </div>
+      <div class="pdf-field">
+        <label class="label-premium">{{ form.is_public }} Public note (visible to everyone, including PDFs)</label>
       </div>
       <div class="pdf-form-actions">
-        <a href="{% url 'notes:note_list' %}" class="btn-ghost">Cancel</a>
-        <button class="btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Save note</button>
+        <a href="{% if note %}{% url 'notes:note_detail' note.pk %}{% else %}{% url 'notes:note_list' %}{% endif %}" class="btn-ghost">Cancel</a>
+        <button class="btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> {% if is_edit %}Save changes{% else %}Save note{% endif %}</button>
       </div>
     </form>
     <aside>
       <div class="note-sidebar-card">
         <h3>Tips</h3>
         <ul class="pdf-tips">
-          <li>Put the course code in the title when it helps search.</li>
+          <li>Put the course code in the Course field so others can search.</li>
           <li>Public notes can be discovered in Resources.</li>
           <li>You can attach a PDF after saving.</li>
         </ul>

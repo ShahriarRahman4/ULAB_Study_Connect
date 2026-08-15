@@ -10,7 +10,7 @@
   <div class="confirm-card">
     <div class="confirm-icon"><i class="fa-solid fa-calendar-xmark"></i></div>
     <h1>Delete this study plan?</h1>
-    <p>Finals Prep will be removed from your saved plans. This demo does not change any backend data.</p>
+    <p>{% if object %}<strong>{{ object.name }}</strong> will be removed from your saved plans.{% else %}This plan will be removed.{% endif %}</p>
     <form method="post" data-confirm="Delete this study plan?" class="confirm-actions">
       {% csrf_token %}
       <a href="{% url 'planner:study_plan_list' %}" class="btn-ghost">Cancel</a>

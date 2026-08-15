@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import F, Prefetch
+from django.db.models import Count, F, Prefetch, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
@@ -8,7 +8,7 @@ from django.views import View
 from django.views.generic import CreateView, DetailView, ListView
 
 from .forms import AnswerForm, CommentForm, PostForm
-from .models import Answer, AnswerVote, Comment, Post, PostVote, Subject
+from .models import Answer, AnswerVote, Comment, Post, PostVote
 
 
 class ForumFeedView(ListView):
@@ -18,16 +18,33 @@ class ForumFeedView(ListView):
     paginate_by = 15
 
     def get_queryset(self):
-        qs = Post.objects.select_related("author", "subject", "category").order_by(
-            "-score", "-created_at"
+        qs = (
+            Post.objects.select_related("author", "subject", "category")
+            .annotate(answer_count=Count("answers", distinct=True))
+            .order_by("-score", "-created_at")
         )
-        query = self.request.GET.get("q")
+        query = (self.request.GET.get("q") or "").strip()
         if query:
-            qs = qs.filter(title__icontains=query)
+            qs = qs.filter(
+                Q(title__icontains=query)
+                | Q(body__icontains=query)
+                | Q(subject_text__icontains=query)
+            )
+        ptype = (self.request.GET.get("type") or "").strip()
+        if ptype in ("question", "discussion"):
+            qs = qs.filter(post_type=ptype)
         return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
+        ctx["thread_count"] = Post.objects.count()
+        ctx["search_q"] = (self.request.GET.get("q") or "").strip()
+        ctx["filter_type"] = (self.request.GET.get("type") or "all").strip() or "all"
+        ctx["trending"] = (
+            Post.objects.exclude(subject_text="")
+            .values_list("subject_text", flat=True)
+            .distinct()[:8]
+        )
         return ctx
 
 
@@ -70,6 +87,14 @@ class PostDetailView(DetailView):
         ctx = super().get_context_data(**kwargs)
         ctx["answer_form"] = AnswerForm()
         ctx["comment_form"] = CommentForm()
+        ctx["related_posts"] = (
+            Post.objects.exclude(pk=self.object.pk)
+            .order_by("-score", "-created_at")[:5]
+        )
+        ctx["is_author"] = (
+            self.request.user.is_authenticated
+            and self.object.author_id == self.request.user.id
+        )
         return ctx
 
 
@@ -78,19 +103,9 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     form_class = PostForm
     template_name = "forum/post_form.html"
 
-    def get_context_data(self, **kwargs):
-        ctx = super().get_context_data(**kwargs)
-        mapping = {}
-        for s in Subject.objects.prefetch_related("categories").order_by("name"):
-            mapping[str(s.pk)] = [
-                {"id": c.pk, "name": c.name} for c in s.categories.all()
-            ]
-        ctx["subject_categories"] = mapping
-        return ctx
-
     def form_valid(self, form):
         form.instance.author = self.request.user
-        messages.success(self.request, "Post created.")
+        messages.success(self.request, "Post published.")
         return super().form_valid(form)
 
     def get_success_url(self):

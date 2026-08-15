@@ -7,7 +7,7 @@ from django.db import models
 class RoutineFile(models.Model):
     title = models.CharField(max_length=255)
     file = models.FileField(upload_to="routines/%Y/%m/")
-    file_hash = models.CharField(max_length=64, unique=True)
+    file_hash = models.CharField(max_length=64, db_index=True)
     version = models.PositiveIntegerField(default=1)
     is_active = models.BooleanField(default=True)
     uploaded_by = models.ForeignKey(

@@ -5,31 +5,35 @@
   <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
     <a href="{% url 'routines:routine_list' %}"><i class="fa-solid fa-calendar-days"></i> Routines</a>
     <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-    <span class="breadcrumb-current">Filtered · CSE 310</span>
+    <span class="breadcrumb-current">{% if is_saved_view %}{{ saved.name }}{% elif filter_course %}{{ filter_course }}{% else %}Filtered{% endif %}</span>
   </nav>
 
   <div class="resources-hero reveal">
     <div class="resources-hero-bg" aria-hidden="true"></div>
     <div class="resources-hero-inner">
       <div>
-        <span class="section-label"><i class="fa-solid fa-filter"></i> Filtered view</span>
-        <h1 class="resources-hero-title">CSE 310 · Section 01</h1>
-        <p class="resources-hero-desc">Your matching exams from Summer 2026 Finals. Save this view or send it straight to the planner.</p>
+        <span class="section-label"><i class="fa-solid fa-filter"></i> {% if is_saved_view %}Saved view{% else %}Filtered view{% endif %}</span>
+        <h1 class="resources-hero-title">{% if is_saved_view %}{{ saved.name }}{% elif filter_course %}{{ filter_course }}{% if filter_section %} · Section {{ filter_section }}{% endif %}{% else %}Matching exams{% endif %}</h1>
+        <p class="resources-hero-desc">{{ exams|length }} exam{{ exams|length|pluralize }} found.</p>
         <div class="resources-hero-actions">
-          <a href="{% url 'routines:routine_list' %}" class="btn-outline">Clear filters</a>
+          <a href="{% url 'routines:routine_list' %}" class="btn-outline">All exams</a>
           <a href="{% url 'planner:study_planner' %}" class="btn-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> Create study plan</a>
         </div>
       </div>
     </div>
   </div>
 
-  <a href="{% url 'routines:routine_list' %}" class="exam-card reveal" style="display:flex;max-width:720px;">
-    <div class="exam-card-top"><div><div class="exam-card-course">CSE 310</div><div class="exam-card-name">Algorithms</div></div><span class="badge badge-indigo">Sec 01</span></div>
+  {% for exam in exams %}
+  <div class="exam-card reveal" style="display:flex;max-width:720px;margin-bottom:12px;">
+    <div class="exam-card-top"><div><div class="exam-card-course">{{ exam.course_code }}</div><div class="exam-card-name">{{ exam.course_name }}</div></div><span class="badge badge-indigo">Sec {{ exam.section }}</span></div>
     <div class="exam-card-meta">
-      <span><i class="fa-regular fa-calendar"></i> Sat, Aug 22, 2026 · 10:00 AM</span>
-      <span class="badge badge-amber">A-301</span>
-      <span>Dr. Rahman</span>
+      <span><i class="fa-regular fa-calendar"></i> {{ exam.exam_date|date:"D, M j, Y" }} · {{ exam.exam_time }}</span>
+      <span class="badge badge-amber">{{ exam.room|default:"—" }}</span>
+      <span>{{ exam.faculty|default:"—" }}</span>
     </div>
-  </a>
+  </div>
+  {% empty %}
+  <p class="resources-empty">No exams match this filter. Upload a routine or try another course/section.</p>
+  {% endfor %}
 </div>
 {% endblock %}

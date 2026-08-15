@@ -14,16 +14,16 @@
       <div>
         <span class="section-label"><i class="fa-solid fa-brain"></i> Algorithm-driven</span>
         <h1 class="resources-hero-title">Smart study<br><span class="text-gradient">planner</span></h1>
-        <p class="resources-hero-desc">Build a realistic schedule from your saved exam routine — hours per day, course load, and exam dates in one view.</p>
+        <p class="resources-hero-desc">Build a schedule from an uploaded exam routine or a saved personal selection.</p>
         <div class="resources-hero-actions">
           <a href="{% url 'planner:study_plan_list' %}" class="btn-outline"><i class="fa-solid fa-list-check"></i> Saved plans</a>
           <a href="{% url 'routines:routine_list' %}" class="btn-ghost"><i class="fa-solid fa-calendar-days"></i> Exam routines</a>
         </div>
       </div>
       <div class="resources-hero-stats">
-        <div class="resources-stat-card"><span class="resources-stat-value">4h</span><span class="resources-stat-label">Default / day</span></div>
-        <div class="resources-stat-card"><span class="resources-stat-value">12</span><span class="resources-stat-label">Day sprint</span></div>
-        <div class="resources-stat-card resources-stat-card-accent"><span class="resources-stat-value">4</span><span class="resources-stat-label">Courses</span></div>
+        <div class="resources-stat-card"><span class="resources-stat-value">{{ form.hours_per_day.value|default:"4" }}h</span><span class="resources-stat-label">Hours / day</span></div>
+        <div class="resources-stat-card"><span class="resources-stat-value">{{ plan_days|length|default:"—" }}</span><span class="resources-stat-label">Days planned</span></div>
+        <div class="resources-stat-card resources-stat-card-accent"><span class="resources-stat-value">{{ personal_exams|length|default:0 }}</span><span class="resources-stat-label">Courses</span></div>
       </div>
     </div>
   </div>
@@ -36,7 +36,7 @@
           {% csrf_token %}
           {{ form.non_field_errors }}
           <div>
-            <label class="label-premium" for="{{ form.routine.id_for_label }}">Saved routine</label>
+            <label class="label-premium" for="{{ form.routine.id_for_label }}">Exam routine</label>
             {{ form.routine }}
             {{ form.routine.errors }}
           </div>
@@ -47,6 +47,35 @@
           <div>
             <label class="label-premium" for="{{ form.start_date.id_for_label }}">Start date</label>
             {{ form.start_date }}
+            {{ form.start_date.errors }}
+          </div>
+          <div>
+            <label class="label-premium" for="{{ form.end_date.id_for_label }}">End date</label>
+            {{ form.end_date }}
+            {{ form.end_date.errors }}
+          </div>
+          <div>
+            <label class="label-premium">Courses in this routine ({{ available_course_count }})</label>
+            <div class="planner-course-toolbar">
+              <input type="search" id="planner-course-search" class="input-premium no-icon" placeholder="Search course..." aria-label="Search courses">
+            </div>
+            <label style="display:flex;gap:8px;align-items:center;font-size:0.8rem;margin-bottom:6px;">
+              <input type="checkbox" id="planner-course-all"> Select all visible
+            </label>
+            <div class="planner-course-list" id="planner-course-list">
+              {% for exam in available_courses %}
+              <label class="planner-course-row" data-search="{{ exam.course_code }} {{ exam.section }} {{ exam.course_name }}">
+                <input type="checkbox" name="course_code[]" value="{{ exam.course_code }}" {% if exam.course_code in selected_course_set %}checked{% endif %}>
+                <span>
+                  <strong>{{ exam.course_code }}</strong>
+                  <span>Sec {{ exam.section|default:"—" }} · {{ exam.exam_date|date:"M j, Y" }}</span>
+                </span>
+              </label>
+              {% empty %}
+              <p style="padding:12px;color:#64748b;font-size:0.85rem;">No courses found. Upload a routine first.</p>
+              {% endfor %}
+            </div>
+            <p style="font-size:0.75rem;color:#64748b;margin-top:6px;">Tick the courses to include. Leave all unchecked to plan every listed course.</p>
           </div>
           <button class="btn-hero-primary auth-submit" type="submit">
             <span class="btn-hero-shine" aria-hidden="true"></span>
@@ -59,53 +88,116 @@
       <div class="note-sidebar-card" style="margin-top:16px;">
         <h3>How it works</h3>
         <ul class="pdf-tips">
-          <li>Heavier courses get more blocks closer to the exam.</li>
+          <li>The plan fills every day from start date to end date.</li>
+          <li>Courses closer to their exam get more hours.</li>
           <li>Daily cap never exceeds the hours you set.</li>
-          <li>Demo generate stays on this page — no backend.</li>
         </ul>
       </div>
     </aside>
 
     <div>
+      {% if not plan_days %}
       <div id="plan-empty" class="planner-empty">
         <div class="resources-empty-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
         <h3>Ready to plan</h3>
-        <p>Choose a routine and daily hours, then generate a custom study schedule.</p>
+        <p>Select a routine, set start and end dates, then generate.</p>
+        {% if logs %}
+        <ul class="pdf-tips" style="margin-top:16px;text-align:left;">{% for log in logs %}<li>{{ log }}</li>{% endfor %}</ul>
+        {% endif %}
       </div>
-
-      <div id="plan-result" class="planner-result hidden">
+      {% else %}
+      <div id="plan-result" class="planner-result">
         <div class="routine-table-head">
           <h2>Personalized schedule</h2>
-          <a href="{% url 'planner:study_plan_list' %}" class="btn-outline" style="padding:8px 14px;font-size:0.8rem;">Save plan</a>
         </div>
+        {% if logs %}
+        <p class="planner-footnote">{% for log in logs %}{{ log }} {% endfor %}</p>
+        {% endif %}
+        {% if personal_exams %}
+        <div class="planner-included">
+          <table>
+            <thead><tr><th>Course</th><th>Sec</th><th>Exam date</th></tr></thead>
+            <tbody>
+              {% for exam in personal_exams %}
+              <tr>
+                <td><strong>{{ exam.course_code }}</strong></td>
+                <td>{{ exam.section|default:"—" }}</td>
+                <td>{{ exam.exam_date|date:"M j, Y" }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+        <div class="planner-timeline-wrap">
         <ol class="planner-timeline">
+          {% for day, blocks in plan_days %}
           <li class="planner-day">
             <div class="planner-day-dot"></div>
-            <div class="planner-day-head">Monday, Aug 18 <span class="badge badge-amber">Today</span></div>
-            <div class="planner-block"><span>CSE 310 · Algorithms</span><span class="badge badge-indigo">2 hrs</span></div>
-            <div class="planner-block"><span>CSE 311 · Database</span><span class="badge badge-indigo">2 hrs</span></div>
+            <div class="planner-day-head">{{ day|date:"l, M j" }}{% if day == plan_start_date %} <span class="badge badge-amber">Start</span>{% endif %}{% if day == plan_end_date %} <span class="badge badge-cyan">End</span>{% endif %}</div>
+            {% for code, hours in blocks %}
+            <div class="planner-block"><span>{{ code }}</span><span class="badge badge-indigo">{{ hours }} hrs</span></div>
+            {% endfor %}
           </li>
-          <li class="planner-day">
-            <div class="planner-day-dot"></div>
-            <div class="planner-day-head">Tuesday, Aug 19</div>
-            <div class="planner-block"><span>CSE 311 · Normalization</span><span class="badge badge-indigo">2 hrs</span></div>
-            <div class="planner-block"><span>CSE 203 · Graphs</span><span class="badge badge-indigo">2 hrs</span></div>
-          </li>
-          <li class="planner-day">
-            <div class="planner-day-dot"></div>
-            <div class="planner-day-head">Wednesday, Aug 20</div>
-            <div class="planner-block"><span>CSE 310 · Master Theorem</span><span class="badge badge-indigo">3 hrs</span></div>
-            <div class="planner-block"><span>ENG 101 · Outline</span><span class="badge badge-cyan">1 hr</span></div>
-          </li>
-          <li class="planner-day">
-            <div class="planner-day-dot"></div>
-            <div class="planner-day-head">Thursday, Aug 21</div>
-            <div class="planner-block"><span>CSE 310 · Past papers</span><span class="badge badge-amber">4 hrs</span></div>
-          </li>
+          {% endfor %}
         </ol>
-        <p class="planner-footnote">Based on Spring 2026 Finals · 4 hours/day. Adjust parameters and generate again anytime.</p>
+        </div>
+
+        <form method="post" action="{% url 'planner:study_plan_save' %}" class="pdf-upload-form" style="margin-top:24px;">
+          {% csrf_token %}
+          {% if plan_id %}<input type="hidden" name="plan_id" value="{{ plan_id }}">{% endif %}
+          {% if saved_routine_id %}<input type="hidden" name="saved_routine_id" value="{{ saved_routine_id }}">{% endif %}
+          {% if official_routine_id %}<input type="hidden" name="official_routine_id" value="{{ official_routine_id }}">{% endif %}
+          {% for exam in personal_exams %}
+          <input type="hidden" name="course_code[]" value="{{ exam.course_code }}">
+          <input type="hidden" name="course_strength[]" value="{{ exam.user_strength|default:3 }}">
+          {% endfor %}
+          {% for day, blocks in plan_days %}
+            {% for code, hours in blocks %}
+            <input type="hidden" name="plan_date[]" value="{{ day|date:'Y-m-d' }}">
+            <input type="hidden" name="plan_course_code[]" value="{{ code }}">
+            <input type="hidden" name="plan_hours[]" value="{{ hours }}">
+            <input type="hidden" name="plan_completed[]" value="false">
+            {% endfor %}
+          {% endfor %}
+          <div class="pdf-field">
+            <label class="label-premium" for="plan-name">Save this plan</label>
+            <input id="plan-name" name="name" class="input-premium no-icon" value="{{ plan_name|default:'My Study Plan' }}" required>
+          </div>
+          <button class="btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Save plan</button>
+        </form>
       </div>
+      {% endif %}
     </div>
   </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+(function () {
+  var search = document.getElementById("planner-course-search");
+  var list = document.getElementById("planner-course-list");
+  var all = document.getElementById("planner-course-all");
+  if (!list) return;
+  var rows = list.querySelectorAll(".planner-course-row");
+  if (search) {
+    search.addEventListener("input", function () {
+      var q = search.value.trim().toLowerCase();
+      rows.forEach(function (row) {
+        var hay = (row.getAttribute("data-search") || "").toLowerCase();
+        row.style.display = !q || hay.indexOf(q) !== -1 ? "" : "none";
+      });
+    });
+  }
+  if (all) {
+    all.addEventListener("change", function () {
+      rows.forEach(function (row) {
+        if (row.style.display === "none") return;
+        var box = row.querySelector("input[type=checkbox]");
+        if (box) box.checked = all.checked;
+      });
+    });
+  }
+})();
+</script>
 {% endblock %}
