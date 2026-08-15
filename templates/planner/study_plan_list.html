@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}Saved Study Plans{% endblock %}
+
+{% block content %}
+<div class="flex flex-between flex-center mb-2">
+    <h1 class="section-title" style="margin:0;">Saved Study Plans</h1>
+    <a href="{% url 'planner:study_planner' %}" class="btn btn-primary">+ New Plan</a>
+</div>
+
+{% if plans %}
+    {% for plan in plans %}
+        <div class="card">
+            <div class="flex flex-between flex-start">
+                <div style="flex:1;">
+                    <div class="flex flex-between flex-center">
+                        <h2 class="card-title" style="margin:0;">
+                            <form method="post" action="{% url 'planner:study_plan_update' plan.pk %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="text" name="name" value="{{ plan.name }}" class="input" style="width:auto;display:inline;font-weight:700;border:none;background:none;padding:0;font-size:1.25rem;" onchange="this.form.submit()">
+                            </form>
+                        </h2>
+                        <div class="actions">
+                            <a href="{% url 'planner:study_planner' %}?plan_id={{ plan.pk }}" class="btn btn-sm btn-primary">Edit/Regenerate</a>
+                            <form method="post" action="{% url 'planner:study_plan_delete' plan.pk %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-4 mt-2">
+                        <div class="stat-card blue" style="padding:1rem;">
+                            <div class="stat-number" style="font-size:1.5rem;" id="total-progress">{{ plan.total_progress }}%</div>
+                            <div class="stat-label">Overall Progress</div>
+                            <div class="progress-bar"><div class="progress-fill progress-fill-total" style="width:{{ plan.total_progress }}%;"></div></div>
+                        </div>
+                        <div class="stat-card green" style="padding:1rem;">
+                            <div class="stat-number" style="font-size:1.5rem;" id="completed-tasks">{{ plan.completed_tasks }}</div>
+                            <div class="stat-label">Tasks Done</div>
+                        </div>
+                        <div class="stat-card orange" style="padding:1rem;">
+                            <div class="stat-number" style="font-size:1.5rem;" id="remaining-tasks">{{ plan.remaining_tasks }}</div>
+                            <div class="stat-label">Tasks Left</div>
+                        </div>
+                        <div class="stat-card red" style="padding:1rem;">
+                            <div class="stat-number" style="font-size:1.5rem;">
+                                {% if plan.nearest_exam_days is not None %}{{ plan.nearest_exam_days }}d{% else %}N/A{% endif %}
+                            </div>
+                            <div class="stat-label">Nearest Exam</div>
+                        </div>
+                    </div>
+
+                    <div class="divider"></div>
+
+                    <h3 style="margin-bottom:0.75rem;font-size:1rem;">Courses in this Plan</h3>
+                    {% for cp in plan.course_plans.all %}
+                        <div class="exam-item">
+                            <div class="flex flex-between flex-center">
+                                <div style="flex:1;">
+                                    <div style="display:flex;gap:0.5rem;align-items:center;">
+                                        <strong>{{ cp.course_code }}</strong>
+                                        <span class="badge
+                                            {% if cp.rating == 'weak' %}badge-success
+                                            {% elif cp.rating == 'hard' %}badge-danger
+                                            {% else %}badge-warning{% endif %}">
+                                            {{ cp.get_rating_display }}
+                                        </span>
+                                        {% if cp.is_completed %}
+                                            <span class="badge badge-success">✅ Completed</span>
+                                        {% endif %}
+                                    </div>
+                                    <div style="margin:0.5rem 0;">
+                                        <div style="display:flex;justify-content:space-between;font-size:0.85rem;">
+                                            <span>Progress:</span>
+                                            <strong id="course-progress-{{ cp.id }}">{{ cp.progress_percentage }}%</strong>
+                                        </div>
+                                        <div class="progress-bar" style="margin:0.25rem 0;">
+                                            <div class="progress-fill progress-fill-course-{{ cp.id }}" style="width:{{ cp.progress_percentage }}%;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <form method="post" action="{% url 'planner:course_plan_complete' cp.pk %}" style="margin-left:0.5rem;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="X-Requested-With" value="XMLHttpRequest">
+                                    <button type="submit" class="btn btn-sm btn-success">Mark Done</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="muted">No courses in this plan.</p>
+                    {% endfor %}
+
+                    {% if plan.tasks_by_date %}
+                        <div class="divider"></div>
+                        <h3 style="margin-bottom:0.75rem;font-size:1rem;">Daily Tasks</h3>
+                        {% for date, tasks in plan.tasks_by_date %}
+                            <div style="margin-bottom:0.75rem;">
+                                <p style="margin:0 0 0.35rem;font-weight:600;font-size:0.9rem;">📅 {{ date|date:"M d, Y (l)" }}</p>
+                                {% for task in tasks %}
+                                    <div style="padding:0.5rem 0.75rem;background:#f8fafc;border:1px solid var(--border);border-radius:6px;margin-bottom:0.35rem;display:flex;align-items:center;gap:0.5rem;">
+                                        <input type="checkbox"
+                                               {% if task.is_completed %}checked disabled{% endif %}
+                                               class="checkbox"
+                                               data-toggle-url="{% url 'planner:daily_task_toggle' task.pk %}"
+                                               data-csrf="{{ csrf_token }}">
+                                        <span style="flex:1;">
+                                            <strong>{{ task.course_plan.course_code }}</strong>
+                                            · {{ task.hours }}h
+                                        </span>
+                                        {% if task.is_completed %}
+                                            <span class="badge badge-success">✓ Done</span>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="card" style="text-align:center;padding:3rem;">
+        <p class="muted mb-2">No saved study plans yet.</p>
+        <a href="{% url 'planner:study_planner' %}" class="btn btn-primary">Create Your First Plan</a>
+    </div>
+{% endif %}
+{% endblock %}

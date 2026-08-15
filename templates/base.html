@@ -1,0 +1,58 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ULAB StudyConnect{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="{% url 'users:home' %}" class="navbar-brand">ULAB StudyConnect</a>
+            <ul class="navbar-nav">
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'users:dashboard' %}">Dashboard</a></li>
+                    <li><a href="{% url 'forum:feed' %}">Forum</a></li>
+                    <li><a href="{% url 'notes:note_list' %}">Notes</a></li>
+                    <li><a href="{% url 'routines:routine_list' %}">Routines</a></li>
+                    <li><a href="{% url 'planner:study_planner' %}">Planner</a></li>
+                    <li><a href="{% url 'users:profile' %}">Profile</a></li>
+                    <li>
+                        <form method="post" action="{% url 'users:logout' %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm" style="background:rgba(255,255,255,0.2);color:white;">Logout</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'users:about' %}">About</a></li>
+                    <li><a href="{% url 'users:mission' %}">Mission</a></li>
+                    <li><a href="{% url 'users:login' %}">Login</a></li>
+                    <li><a href="{% url 'users:register' %}" class="btn btn-sm" style="background:white;color:var(--primary);">Sign Up</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert {% if message.tags == 'error' %}alert-error{% elif message.tags == 'success' %}alert-success{% elif message.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 ULAB StudyConnect. All rights reserved.</p>
+        <p class="muted" style="color:#94a3b8;margin-top:0.5rem;">Empowering students through collaborative learning.</p>
+    </footer>
+
+    <script src="{% static 'js/main.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}About - ULAB StudyConnect{% endblock %}
+
+{% block content %}
+<div class="card">
+    <h1 class="section-title">About ULAB StudyConnect</h1>
+    <p class="mb-2">ULAB StudyConnect is a comprehensive academic platform designed specifically for ULAB students to enhance their learning experience and academic performance.</p>
+    <p>Our platform brings together all the essential tools students need in one place, making study management simple and effective.</p>
+</div>
+
+<div class="grid grid-3">
+    <div class="stat-card blue">
+        <div class="stat-number">{{ total_users|default:0 }}</div>
+        <div class="stat-label">Active Users</div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-number">{{ total_notes|default:0 }}</div>
+        <div class="stat-label">Study Notes</div>
+    </div>
+    <div class="stat-card orange">
+        <div class="stat-number">{{ total_forum_posts|default:0 }}</div>
+        <div class="stat-label">Forum Discussions</div>
+    </div>
+</div>
+
+<div class="grid grid-2 mt-3">
+    <div class="card">
+        <h2 class="card-title">Our Vision</h2>
+        <p>To create a collaborative learning environment where every ULAB student can thrive through shared knowledge, structured planning, and peer support.</p>
+    </div>
+    <div class="card">
+        <h2 class="card-title">Our Mission</h2>
+        <p>Empower students with cutting-edge tools for study planning, knowledge sharing, and academic resource management - all in one integrated platform.</p>
+    </div>
+</div>
+
+<div class="card mt-3">
+    <h2 class="card-title">Key Features</h2>
+    <ul style="padding-left:1.5rem;">
+        <li class="mb-1"><strong>Forum:</strong> Q&A and discussion platform with voting and accepted answers</li>
+        <li class="mb-1"><strong>Notes System:</strong> Markdown notes, PDF uploads, annotations, AI summarization, quiz generation</li>
+        <li class="mb-1"><strong>Routine Management:</strong> Excel-based exam routine import, personalized saved routines</li>
+        <li class="mb-1"><strong>Study Planner:</strong> AI-generated study plans based on exam dates and difficulty levels</li>
+        <li class="mb-1"><strong>User Profiles:</strong> Department and semester-based personalization</li>
+    </ul>
+</div>
+{% endblock %}

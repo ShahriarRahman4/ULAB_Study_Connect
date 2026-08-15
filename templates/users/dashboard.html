@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - ULAB StudyConnect{% endblock %}
+
+{% block content %}
+<h1 class="section-title">Welcome, {{ user.get_full_name|default:user.username }}!</h1>
+
+<div class="grid grid-4 mb-3">
+    <div class="stat-card blue">
+        <div class="stat-number">{{ notes_count }}</div>
+        <div class="stat-label">My Notes</div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-number">{{ forum_posts_count }}</div>
+        <div class="stat-label">Forum Posts</div>
+    </div>
+    <div class="stat-card orange">
+        <div class="stat-number">{{ routine_count }}</div>
+        <div class="stat-label">Active Routines</div>
+    </div>
+    <div class="stat-card red">
+        <div class="stat-number">{{ upcoming_exams_count }}</div>
+        <div class="stat-label">Upcoming Exams</div>
+    </div>
+</div>
+
+<div class="grid grid-2">
+    <div class="card">
+        <h2 class="card-title">Quick Actions</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
+            <a href="{% url 'forum:post_create' %}" class="btn btn-primary" style="text-align:center;">New Post</a>
+            <a href="{% url 'notes:note_create' %}" class="btn btn-success" style="text-align:center;">New Note</a>
+            <a href="{% url 'notes:pdf_upload' %}" class="btn btn-secondary" style="text-align:center;">Upload PDF</a>
+            <a href="{% url 'planner:study_planner' %}" class="btn btn-primary" style="text-align:center;">Make Plan</a>
+            <a href="{% url 'notes:summarize' %}" class="btn btn-success" style="text-align:center;">Summarize</a>
+            <a href="{% url 'notes:quiz' %}" class="btn btn-secondary" style="text-align:center;">Make Quiz</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="card-title">My Saved Routines</h2>
+        {% if saved_routines %}
+            {% for sr in saved_routines %}
+                <div class="saved-routine-card">
+                    <div class="flex flex-between">
+                        <strong>{{ sr.name }}</strong>
+                        <span class="badge badge-primary">{{ sr.exams.count }} exams</span>
+                    </div>
+                    <p class="muted mb-1" style="font-size:0.85rem;">Created: {{ sr.created_at|date:"M d, Y" }}</p>
+                    <a href="{% url 'planner:study_planner' %}?plan_id={{ sr.id }}" class="btn btn-sm btn-primary">Plan with this</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="muted">No saved routines yet. Go to <a href="{% url 'routines:routine_list' %}">Routines</a> to create one.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid grid-2 mt-3">
+    <div class="card">
+        <h2 class="card-title">Navigate Modules</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+            <a href="{% url 'forum:feed' %}" style="text-decoration:none;color:inherit;">
+                <div class="tool-card" style="border-color:var(--primary);text-align:center;">
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">💬</div>
+                    <strong>Forum</strong>
+                    <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">Ask & Answer</p>
+                </div>
+            </a>
+            <a href="{% url 'notes:note_list' %}" style="text-decoration:none;color:inherit;">
+                <div class="tool-card" style="border-color:var(--success);text-align:center;">
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">📝</div>
+                    <strong>Notes</strong>
+                    <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">Write & Share</p>
+                </div>
+            </a>
+            <a href="{% url 'routines:routine_list' %}" style="text-decoration:none;color:inherit;">
+                <div class="tool-card" style="border-color:var(--warning);text-align:center;">
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">📅</div>
+                    <strong>Routines</strong>
+                    <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">Exam Schedules</p>
+                </div>
+            </a>
+            <a href="{% url 'planner:study_planner' %}" style="text-decoration:none;color:inherit;">
+                <div class="tool-card" style="border-color:var(--danger);text-align:center;">
+                    <div style="font-size:2rem;margin-bottom:0.5rem;">📚</div>
+                    <strong>Planner</strong>
+                    <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">Study Plans</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="card-title">Profile Summary</h2>
+        <p class="mb-1"><strong>Username:</strong> {{ user.username }}</p>
+        <p class="mb-1"><strong>Email:</strong> {{ user.email|default:"Not set" }}</p>
+        {% if user.profile %}
+            <p class="mb-1"><strong>Display Name:</strong> {{ user.profile.display_name|default:"Not set" }}</p>
+            <p class="mb-1"><strong>Department:</strong> {{ user.profile.department|default:"Not set" }}</p>
+            <p class="mb-1"><strong>Semester:</strong> {{ user.profile.semester|default:"Not set" }}</p>
+        {% endif %}
+        <div class="mt-2">
+            <a href="{% url 'users:profile' %}" class="btn btn-secondary btn-sm">Edit Profile</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

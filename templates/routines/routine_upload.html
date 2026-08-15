@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Routine - Staff{% endblock %}
+
+{% block content %}
+<a href="{% url 'routines:routine_list' %}" class="btn btn-secondary btn-sm mb-2">← Back</a>
+
+<div class="card" style="max-width:700px;margin:0 auto;">
+    <h1 class="section-title" style="font-size:1.5rem;">Upload Routine Excel</h1>
+    {% if info %}
+        <div class="alert alert-info">
+            <ul style="margin:0;padding-left:1.25rem;">
+                {% for line in info %}
+                    <li>{{ line }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    {% if form.errors %}
+        <div class="alert alert-error">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <p><strong>{{ field.label }}:</strong> {{ error }}</p>
+                {% endfor %}
+            {% endfor %}
+            {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label class="form-label">Routine Title *</label>
+            {{ form.title }}
+            <div class="help-text">e.g. "Fall 2024 Final Exam Routine"</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Excel File (.xlsx) *</label>
+            {{ form.file }}
+            <div class="help-text">
+                Expected format: Day/Date as rows, Time as columns, cells like<br>
+                <code>Course Code-Course Name-Section / Room / Faculty</code><br>
+                Example: <code>CSE3201-Computer Networks-1 / Room 101 / Dr. Ahmed</code>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Notes (optional)</label>
+            {{ form.notes }}
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-primary">Upload & Import</button>
+            <a href="{% url 'routines:routine_list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

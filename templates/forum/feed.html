@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Forum - ULAB StudyConnect{% endblock %}
+
+{% block content %}
+<div class="flex flex-between flex-center mb-2">
+    <h1 class="section-title" style="margin:0;">Discussion Forum</h1>
+    <a href="{% url 'forum:post_create' %}" class="btn btn-primary">New Post</a>
+</div>
+
+<div class="filter-form">
+    <form method="get" style="flex:1;display:flex;gap:1rem;align-items:end;">
+        <div style="flex:1;">
+            <label class="form-label" style="font-size:0.85rem;">Search Posts</label>
+            <input type="text" name="q" class="input" placeholder="Search by title..." value="{{ request.GET.q|default:'' }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+        <a href="{% url 'forum:feed' %}" class="btn btn-secondary">Clear</a>
+    </form>
+</div>
+
+<div class="card">
+    <div class="flex flex-between flex-center mb-2">
+        <strong>{{ posts|length }} post{{ posts|pluralize }}</strong>
+        <a href="{% url 'notes:public_notes' %}" class="btn btn-sm btn-secondary">Public Notes</a>
+    </div>
+
+    {% if posts %}
+        {% for post in posts %}
+            <div class="post-item">
+                <div class="flex" style="gap:1rem;">
+                    <div class="vote-buttons">
+                        <form method="post" action="{% url 'forum:post_vote' post.pk %}" style="margin:0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="value" value="1">
+                            <button type="submit" class="vote-btn" title="Upvote">▲</button>
+                        </form>
+                        <span class="score">{{ post.score }}</span>
+                        <form method="post" action="{% url 'forum:post_vote' post.pk %}" style="margin:0;">
+                            {% csrf_token %}
+                            <input type="hidden" name="value" value="-1">
+                            <button type="submit" class="vote-btn" title="Downvote">▼</button>
+                        </form>
+                    </div>
+                    <div style="flex:1;">
+                        <h3 class="post-title" style="margin:0;">
+                            <a href="{% url 'forum:post_detail' post.pk %}">{{ post.title }}</a>
+                        </h3>
+                        <div class="post-meta">
+                            <span class="badge badge-primary">{{ post.get_post_type_display }}</span>
+                            {% if post.subject %}<span class="badge badge-success">{{ post.subject.name }}</span>{% endif %}
+                            {% if post.category %}<span class="badge badge-warning">{{ post.category.name }}</span>{% endif %}
+                            · Posted by <strong>{{ post.author.profile.display_name|default:post.author.username }}</strong>
+                            · {{ post.created_at|date:"M d, Y H:i" }}
+                        </div>
+                        <p class="post-body" style="margin:0.5rem 0;">{{ post.body|truncatechars:200 }}</p>
+                        <div class="muted" style="font-size:0.85rem;">
+                            💬 {{ post.answers.count }} answer{{ post.answers.count|pluralize }}
+                            · 🗨️ {{ post.comments.count }} comment{{ post.comments.count|pluralize }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="muted" style="text-align:center;padding:2rem;">No posts yet. Be the first to <a href="{% url 'forum:post_create' %}">create a post</a>!</p>
+    {% endif %}
+</div>
+
+{% if is_paginated %}
+    <div class="card" style="text-align:center;">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn btn-secondary">← Previous</a>
+        {% endif %}
+        <span class="muted" style="margin:0 1rem;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="btn btn-secondary">Next →</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

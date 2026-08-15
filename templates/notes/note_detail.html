@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ note.title }} - Notes{% endblock %}
+
+{% block content %}
+<a href="{% url 'notes:note_list' %}" class="btn btn-secondary btn-sm mb-2">← Back to Notes</a>
+
+<div class="card">
+    <div class="flex flex-between flex-start">
+        <div style="flex:1;">
+            <h1 class="section-title" style="margin:0 0 0.5rem;font-size:1.5rem;">
+                {{ note.title }}
+                {% if note.is_public %}<span class="badge badge-success">Public</span>{% endif %}
+            </h1>
+            <div class="note-meta">
+                by <strong>{{ note.owner.profile.display_name|default:note.owner.username }}</strong>
+                · Created: {{ note.created_at|date:"M d, Y" }}
+                · Updated: {{ note.updated_at|date:"M d, Y H:i" }}
+                {% if note.course %}· Course: {{ note.course.code }} - {{ note.course.name }}{% endif %}
+            </div>
+        </div>
+        {% if note.owner == user %}
+            <div class="actions" style="align-self:flex-start;">
+                <a href="{% url 'notes:note_edit' note.pk %}" class="btn btn-sm btn-primary">Edit</a>
+                <form method="get" action="{% url 'notes:pdf_upload_for_note' note.pk %}" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-success">Attach PDF</button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="card-title">Note Content</h2>
+    <div style="white-space:pre-wrap;line-height:1.8;padding:1rem;background:#f8fafc;border-radius:8px;">{{ note.body_markdown }}</div>
+
+    {% if note.youtube_urls %}
+        <div class="divider"></div>
+        <h3 style="margin-bottom:1rem;">YouTube References</h3>
+        {% for vid in note.youtube_video_ids %}
+            <div class="youtube-embed">
+                <iframe src="https://www.youtube.com/embed/{{ vid }}" allowfullscreen></iframe>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+{% if note.pdfs.count > 0 %}
+    <div class="card">
+        <h2 class="card-title">Attached PDFs ({{ note.pdfs.count }})</h2>
+        {% for pdf in note.pdfs.all %}
+            <div class="exam-item">
+                <div class="flex flex-between flex-center">
+                    <div>
+                        <strong>📄 {{ pdf.title }}</strong>
+                        <p class="muted" style="font-size:0.85rem;margin:0.25rem 0;">
+                            Uploaded: {{ pdf.created_at|date:"M d, Y" }}
+                            {% if pdf.extracted_text %}· Text extracted ✓{% endif %}
+                        </p>
+                    </div>
+                    {% if pdf.user == user %}
+                        <a href="{% url 'notes:pdf_detail' pdf.pk %}" class="btn btn-sm btn-primary">Open / Annotate</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% if note.owner == user %}
+    <div class="card">
+        <h2 class="card-title">Quick Tools</h2>
+        <div class="grid grid-2">
+            <a href="{% url 'notes:summarize' %}?note_id={{ note.id }}" class="btn btn-secondary">Summarize this Note</a>
+            <a href="{% url 'notes:quiz' %}?note_id={{ note.id }}" class="btn btn-secondary">Generate Quiz from Note</a>
+        </div>
+
+        <div class="divider"></div>
+        <form method="post" action="{% url 'notes:note_delete' note.pk %}" data-confirm="Delete this note permanently?">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Delete Note</button>
+        </form>
+    </div>
+{% endif %}
+{% endblock %}

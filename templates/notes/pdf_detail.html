@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ pdf.title }} - PDF Viewer{% endblock %}
+
+{% block content %}
+<a href="{% url 'notes:note_list' %}" class="btn btn-secondary btn-sm mb-2">← Back to Notes</a>
+
+<div class="card mb-2">
+    <div class="flex flex-between flex-center">
+        <div>
+            <h1 class="section-title" style="margin:0;font-size:1.25rem;">{{ pdf.title }}</h1>
+            <p class="muted" style="font-size:0.85rem;margin:0.25rem 0;">
+                Uploaded: {{ pdf.created_at|date:"M d, Y H:i" }}
+                · {{ pdf.annotations.count }} annotation{{ pdf.annotations.count|pluralize }}
+                {% if pdf.note %}· Part of: <a href="{% url 'notes:note_detail' pdf.note.pk %}">{{ pdf.note.title }}</a>{% endif %}
+            </p>
+        </div>
+        <div class="actions">
+            <a href="{% url 'notes:pdf_file' pdf.pk %}?attachment=1" class="btn btn-sm btn-secondary">Download</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <iframe class="pdf-viewer" src="{{ pdf_absolute_url }}" type="application/pdf"></iframe>
+</div>
+
+<div class="grid grid-2 mt-3">
+    <div class="card">
+        <h2 class="card-title">Quick Actions</h2>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;">
+            <a href="{% url 'notes:summarize' %}?pdf_id={{ pdf.id }}" class="btn btn-success">Summarize PDF Content</a>
+            <a href="{% url 'notes:quiz' %}?pdf_id={{ pdf.id }}" class="btn btn-warning">Generate Quiz from PDF</a>
+        </div>
+    </div>
+    <div class="card">
+        <h2 class="card-title">Annotations ({{ pdf.annotations.count }})</h2>
+        {% if pdf.annotations.all %}
+            {% for ann in pdf.annotations.all %}
+                <div class="comment-item" style="margin-bottom:0.5rem;">
+                    <div style="display:flex;gap:0.5rem;align-items:center;">
+                        <span class="badge badge-primary">Page {{ ann.page }}</span>
+                        <span class="badge badge-success">{{ ann.get_annotation_type_display }}</span>
+                    </div>
+                    {% if ann.quote_text %}
+                        <p style="margin:0.5rem 0 0;font-style:italic;color:var(--text-light);">
+                            "{{ ann.quote_text|truncatechars:100 }}"
+                        </p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="muted">No annotations yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

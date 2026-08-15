@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}My Notes - ULAB StudyConnect{% endblock %}
+
+{% block content %}
+<div class="flex flex-between flex-center mb-2">
+    <h1 class="section-title" style="margin:0;">My Notes</h1>
+    <div style="display:flex;gap:0.5rem;">
+        <a href="{% url 'notes:public_notes' %}" class="btn btn-secondary">Public Gallery</a>
+        <a href="{% url 'notes:note_create' %}" class="btn btn-primary">New Note</a>
+    </div>
+</div>
+
+<div class="grid grid-4 mb-3">
+    <a href="{% url 'notes:pdf_upload' %}" style="text-decoration:none;color:inherit;">
+        <div class="tool-card" style="border-color:var(--primary);text-align:center;height:100%;">
+            <div style="font-size:2rem;margin-bottom:0.5rem;">📄</div>
+            <strong>Upload PDF</strong>
+            <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">Annotate & Summarize</p>
+        </div>
+    </a>
+    <a href="{% url 'notes:summarize' %}" style="text-decoration:none;color:inherit;">
+        <div class="tool-card" style="border-color:var(--success);text-align:center;height:100%;">
+            <div style="font-size:2rem;margin-bottom:0.5rem;">📋</div>
+            <strong>Summarize</strong>
+            <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">AI Text Summary</p>
+        </div>
+    </a>
+    <a href="{% url 'notes:quiz' %}" style="text-decoration:none;color:inherit;">
+        <div class="tool-card" style="border-color:var(--warning);text-align:center;height:100%;">
+            <div style="font-size:2rem;margin-bottom:0.5rem;">❓</div>
+            <strong>Quiz Maker</strong>
+            <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">Generate MCQs</p>
+        </div>
+    </a>
+    <a href="{% url 'notes:note_create' %}" style="text-decoration:none;color:inherit;">
+        <div class="tool-card" style="border-color:var(--danger);text-align:center;height:100%;">
+            <div style="font-size:2rem;margin-bottom:0.5rem;">✏️</div>
+            <strong>Quick Note</strong>
+            <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">Write Markdown</p>
+        </div>
+    </a>
+</div>
+
+<div class="card">
+    {% if notes %}
+        {% for note in notes %}
+            <div class="note-item">
+                <div class="flex flex-between">
+                    <div style="flex:1;">
+                        <h3 class="post-title" style="margin:0;">
+                            <a href="{% url 'notes:note_detail' note.pk %}">{{ note.title }}</a>
+                            {% if note.is_public %}<span class="badge badge-success">Public</span>{% endif %}
+                        </h3>
+                        <div class="note-meta">
+                            Updated: {{ note.updated_at|date:"M d, Y H:i" }}
+                            {% if note.course %}· Course: {{ note.course.code }}{% endif %}
+                            · {{ note.pdfs.count }} PDF{{ note.pdfs.count|pluralize }} attached
+                        </div>
+                        <p style="margin:0.5rem 0;color:var(--text-light);">{{ note.body_markdown|truncatechars:150 }}</p>
+                    </div>
+                    <div class="actions" style="align-self:flex-start;">
+                        <a href="{% url 'notes:note_edit' note.pk %}" class="btn btn-sm btn-secondary">Edit</a>
+                        <form method="get" action="{% url 'notes:pdf_upload_for_note' note.pk %}" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-primary">Add PDF</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div style="text-align:center;padding:2rem;">
+            <p class="muted mb-2">No notes yet. Start creating your first note!</p>
+            <a href="{% url 'notes:note_create' %}" class="btn btn-primary">Create Note</a>
+        </div>
+    {% endif %}
+</div>
+
+{% if is_paginated %}
+    <div class="card" style="text-align:center;">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary">← Previous</a>
+        {% endif %}
+        <span class="muted" style="margin:0 1rem;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary">Next →</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

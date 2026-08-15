@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Study Planner{% endblock %}
+
+{% block content %}
+<div class="flex flex-between flex-center mb-2">
+    <h1 class="section-title" style="margin:0;">Study Planner</h1>
+    <a href="{% url 'planner:study_plan_list' %}" class="btn btn-secondary">Saved Plans</a>
+</div>
+
+<div class="card">
+    <h2 class="card-title">Generate a Study Plan</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="grid grid-3">
+            <div class="form-group">
+                <label class="form-label">Saved Routine *</label>
+                {{ form.routine }}
+                {{ form.routine.errors }}
+                <div class="help-text">First save a routine in the <a href="{% url 'routines:routine_list' %}">Routines</a> page.</div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Hours per Day *</label>
+                {{ form.hours_per_day }}
+                {{ form.hours_per_day.errors }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Start Date</label>
+                {{ form.start_date }}
+            </div>
+        </div>
+
+        <h3 style="margin:1rem 0 0.5rem;font-size:1rem;">Filter Courses (optional)</h3>
+        <p class="muted mb-2" style="font-size:0.85rem;">Only include specific courses in your plan. Leave empty for all exams in the routine.</p>
+        <div id="course-filters">
+            <div class="course-filter-row">
+                <input type="text" name="course_code[]" class="input" placeholder="Course Code (e.g. CSE3201)">
+                <input type="text" name="section[]" class="input" placeholder="Section">
+                <select name="strength[]" class="select">
+                    <option value="1">Very Easy</option>
+                    <option value="2">Easy</option>
+                    <option value="3" selected>Medium</option>
+                    <option value="4">Hard</option>
+                    <option value="5">Very Hard</option>
+                </select>
+                <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">×</button>
+            </div>
+        </div>
+        <button type="button" class="btn btn-sm btn-secondary mt-1" onclick="addCourseFilterRow('course-filters')">+ Add Another Course</button>
+
+        <div class="mt-2">
+            <button type="submit" class="btn btn-primary">📚 Build Study Plan</button>
+        </div>
+    </form>
+</div>
+
+{% if plan_days %}
+    <div class="card">
+        <div class="flex flex-between flex-center mb-2">
+            <h2 class="card-title" style="margin:0;">Your Study Plan</h2>
+            <div style="display:flex;gap:0.5rem;">
+                {% if logs %}
+                    <span class="badge badge-info">{{ logs|last }}</span>
+                {% endif %}
+                {% if nearest_exam_days is not None %}
+                    <span class="badge badge-warning">Nearest exam: {{ nearest_exam_days }} day{{ nearest_exam_days|pluralize }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if personal_exams %}
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.5rem;margin-bottom:1rem;">
+                {% for ex in personal_exams %}
+                    <div style="padding:0.5rem 0.75rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:0.85rem;">
+                        <strong>{{ ex.course_code }}</strong>
+                        <br><span class="muted">{{ ex.exam_date|date:"M d" }} · {{ ex.exam_time }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'planner:study_plan_save' %}">
+            {% csrf_token %}
+            <input type="hidden" name="routine_id" value="{{ routine_id|default:'' }}">
+            {% if plan_id %}<input type="hidden" name="plan_id" value="{{ plan_id }}">{% endif %}
+
+            <div class="form-group">
+                <label class="form-label">Plan Name</label>
+                <input type="text" name="name" class="input" value="{{ plan_name|default:'My Study Plan' }}" required>
+            </div>
+
+            <div id="plan-data"></div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Course</th>
+                        <th>Hours</th>
+                        <th>Done</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for date, courses in plan_days %}
+                        {% for code, hours in courses %}
+                            <tr>
+                                <td>{{ date|date:"M d, D" }}</td>
+                                <td>
+                                    <strong>{{ code }}</strong>
+                                    <input type="hidden" name="plan_date[]" value="{{ date|date:'Y-m-d' }}">
+                                    <input type="hidden" name="plan_course_code[]" value="{{ code }}">
+                                    <input type="hidden" name="plan_hours[]" value="{{ hours }}">
+                                    <input type="hidden" name="plan_completed[]" value="false">
+                                </td>
+                                <td>{{ hours }}h</td>
+                                <td>⬜</td>
+                            </tr>
+                            {% with cp=course_plans|first %}
+                            {% endwith %}
+                        {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div style="display:none;">
+                {% if selected_pairs %}
+                    {% for pair in selected_pairs %}
+                        <input type="hidden" name="course_code[]" value="{{ pair.code }}">
+                        <input type="hidden" name="course_strength[]" value="{{ pair.strength }}">
+                    {% endfor %}
+                {% endif %}
+                {% if personal_exams %}
+                    {% for ex in personal_exams %}
+                        <input type="hidden" name="course_code[]" value="{{ ex.course_code }}">
+                        <input type="hidden" name="course_strength[]" value="{{ ex.user_strength|default:3 }}">
+                    {% endfor %}
+                {% endif %}
+            </div>
+
+            <div class="mt-2">
+                <button type="submit" class="btn btn-success">💾 Save This Plan</button>
+            </div>
+        </form>
+    </div>
+{% endif %}
+{% endblock %}

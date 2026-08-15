@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Filtered Exams - Routines{% endblock %}
+
+{% block content %}
+<a href="{% url 'routines:routine_list' %}" class="btn btn-secondary btn-sm mb-2">← Back</a>
+
+<div class="card">
+    <h1 class="section-title" style="font-size:1.25rem;">Filtered Exam Results</h1>
+    {% if selected_codes %}
+        <p class="muted" style="margin:0.25rem 0;">
+            Filters applied:
+            {% for pair in selected_pairs %}
+                <span class="badge badge-info">{{ pair.code }}{% if pair.section %} Sec {{ pair.section }}{% endif %}</span>
+            {% endfor %}
+        </p>
+    {% endif %}
+</div>
+
+{% if routines %}
+    {% for routine in routines %}
+        <div class="card">
+            <h2 class="card-title">
+                {{ routine.title }}
+                <span class="badge badge-info">v{{ routine.version }}</span>
+                {% if routine.is_active %}<span class="badge badge-success">Active</span>{% endif %}
+            </h2>
+
+            {% with routine.exams.all as all_exams %}
+            {% if all_exams %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Course</th>
+                            <th>Sec</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Room</th>
+                            <th>Faculty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ex in all_exams %}
+                            <tr>
+                                <td><strong>{{ ex.course_code }}</strong></td>
+                                <td>{{ ex.course_name }}</td>
+                                <td>
+                                    {% if ex.section %}<span class="badge badge-warning">{{ ex.section }}</span>{% endif %}
+                                </td>
+                                <td>{{ ex.exam_date|date:"M d, D" }}</td>
+                                <td>{{ ex.exam_time }}</td>
+                                <td>{{ ex.room }}</td>
+                                <td>{{ ex.faculty }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="muted" style="text-align:center;padding:1rem;">No exams match your filter for this routine.</p>
+            {% endif %}
+            {% endwith %}
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="card" style="text-align:center;padding:3rem;">
+        <p class="muted">No routines found matching your filters.</p>
+    </div>
+{% endif %}
+{% endblock %}

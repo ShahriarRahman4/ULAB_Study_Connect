@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz Generator - Notes{% endblock %}
+
+{% block content %}
+<a href="{% url 'notes:note_list' %}" class="btn btn-secondary btn-sm mb-2">← Back to Notes</a>
+
+<h1 class="section-title">Quiz Generator</h1>
+<p class="muted mb-3">Generate MCQs and short-answer questions from your notes or pasted text.</p>
+
+<div class="card">
+    <h2 class="card-title">Choose Source Material</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="grid grid-3">
+            <div class="form-group">
+                <label class="form-label">Select Note (optional)</label>
+                <select name="note_id" class="select">
+                    <option value="">-- Paste text --</option>
+                    {% for n in notes %}
+                        <option value="{{ n.id }}">{{ n.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Select PDF (optional)</label>
+                <select name="pdf_id" class="select">
+                    <option value="">-- None --</option>
+                    {% for p in pdfs %}
+                        <option value="{{ p.id }}">{{ p.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" style="align-self:flex-end;">
+                <button type="submit" class="btn btn-primary" style="width:100%;">❓ Generate Quiz</button>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="form-label">Or paste text directly:</label>
+            {{ form.text }}
+        </div>
+    </form>
+    {% if source_preview %}
+        <p class="muted" style="font-size:0.85rem;">Source preview: {{ source_preview }}...</p>
+    {% endif %}
+</div>
+
+{% if quiz %}
+    {% if quiz.mcqs %}
+        <div class="card">
+            <h2 class="card-title">Multiple Choice Questions</h2>
+            {% for mcq in quiz.mcqs %}
+                <div id="mcq-{{ forloop.counter0 }}" style="padding:1rem;background:#f8fafc;border-radius:8px;margin-bottom:1rem;">
+                    <p style="margin:0 0 0.75rem;font-weight:600;">{{ forloop.counter }}. {{ mcq.question }}</p>
+                    {% for choice in mcq.choices %}
+                        <label class="quiz-option">
+                            <input type="radio" name="mcq{{ forloop.parentloop.counter0 }}" value="{{ forloop.counter0 }}" style="margin-right:0.5rem;">
+                            {{ choice }}
+                        </label>
+                    {% endfor %}
+                    <button type="button" class="btn btn-sm btn-primary mt-1" onclick="checkQuiz({{ forloop.counter0 }}, {{ mcq.answer_index }})">
+                        Check Answer
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if quiz.short %}
+        <div class="card">
+            <h2 class="card-title">Short Answer Questions</h2>
+            {% for sq in quiz.short %}
+                <div style="padding:1rem;background:#f8fafc;border-radius:8px;margin-bottom:1rem;">
+                    <p style="margin:0 0 0.5rem;font-weight:600;">{{ forloop.counter }}. {{ sq.prompt }}</p>
+                    <p class="muted" style="font-size:0.85rem;margin:0;">💡 Hint: {{ sq.hint }}</p>
+                    <textarea class="textarea mt-1" rows="4" placeholder="Write your answer here..."></textarea>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if not quiz.mcqs and not quiz.short %}
+        <div class="card">
+            <p class="muted" style="text-align:center;padding:1rem;">Not enough content to generate quiz. Please try with more text.</p>
+        </div>
+    {% endif %}
+{% endif %}
+{% endblock %}

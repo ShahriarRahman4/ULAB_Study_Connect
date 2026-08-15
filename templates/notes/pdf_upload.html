@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload PDF - Notes{% endblock %}
+
+{% block content %}
+<a href="{% url 'notes:note_list' %}" class="btn btn-secondary btn-sm mb-2">← Back</a>
+
+<div class="card" style="max-width:600px;margin:0 auto;">
+    <h1 class="section-title" style="font-size:1.5rem;">Upload PDF</h1>
+    {% if note %}
+        <div class="alert alert-info">
+            Attaching to note: <strong>{{ note.title }}</strong>
+        </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {% if form.errors %}
+            <div class="alert alert-error">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <p><strong>{{ field.label }}:</strong> {{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label class="form-label">PDF Title *</label>
+            {{ form.title }}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">PDF File *</label>
+            {{ form.file }}
+            <div class="help-text">Max 15MB. Only .pdf files accepted.</div>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-primary">Upload PDF</button>
+            <a href="{% if note %}{% url 'notes:note_detail' note.pk %}{% else %}{% url 'notes:note_list' %}{% endif %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

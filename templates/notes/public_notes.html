@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Public Notes - ULAB StudyConnect{% endblock %}
+
+{% block content %}
+<div class="flex flex-between flex-center mb-2">
+    <h1 class="section-title" style="margin:0;">Public Notes Gallery</h1>
+    <a href="{% url 'notes:note_list' %}" class="btn btn-secondary">← My Notes</a>
+</div>
+
+<div class="card">
+    {% if notes %}
+        {% for note in notes %}
+            <div class="note-item">
+                <h3 class="post-title" style="margin:0;">
+                    <a href="{% url 'notes:note_detail' note.pk %}">{{ note.title }}</a>
+                    <span class="badge badge-success">Public</span>
+                </h3>
+                <div class="note-meta">
+                    by <strong>{{ note.owner.profile.display_name|default:note.owner.username }}</strong>
+                    · Updated: {{ note.updated_at|date:"M d, Y" }}
+                    {% if note.course %}· Course: {{ note.course.code }}{% endif %}
+                </div>
+                <p style="margin:0.5rem 0;color:var(--text-light);">{{ note.body_markdown|truncatechars:200 }}</p>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p class="muted" style="text-align:center;padding:2rem;">No public notes yet. Check back later or make your own notes public!</p>
+    {% endif %}
+</div>
+
+{% if is_paginated %}
+    <div class="card" style="text-align:center;">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-secondary">← Previous</a>
+        {% endif %}
+        <span class="muted" style="margin:0 1rem;">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="btn btn-secondary">Next →</a>
+        {% endif %}
+    </div>
+{% endif %}
+{% endblock %}

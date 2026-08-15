@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ post.title }} - Forum{% endblock %}
+
+{% block content %}
+<a href="{% url 'forum:feed' %}" class="btn btn-secondary btn-sm mb-2">← Back to Forum</a>
+
+<div class="card">
+    <div class="flex" style="gap:1rem;">
+        <div class="vote-buttons">
+            <form method="post" action="{% url 'forum:post_vote' post.pk %}" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="value" value="1">
+                <button type="submit" class="vote-btn" title="Upvote">▲</button>
+            </form>
+            <span class="score">{{ post.score }}</span>
+            <form method="post" action="{% url 'forum:post_vote' post.pk %}" style="margin:0;">
+                {% csrf_token %}
+                <input type="hidden" name="value" value="-1">
+                <button type="submit" class="vote-btn" title="Downvote">▼</button>
+            </form>
+        </div>
+        <div style="flex:1;">
+            <h1 class="section-title" style="margin:0 0 0.5rem;font-size:1.5rem;">{{ post.title }}</h1>
+            <div class="post-meta mb-2">
+                <span class="badge badge-primary">{{ post.get_post_type_display }}</span>
+                {% if post.subject %}<span class="badge badge-success">{{ post.subject.name }}</span>{% endif %}
+                {% if post.category %}<span class="badge badge-warning">{{ post.category.name }}</span>{% endif %}
+                · Posted by <strong>{{ post.author.profile.display_name|default:post.author.username }}</strong>
+                · {{ post.created_at|date:"M d, Y H:i" }}
+                {% if post.updated_at != post.created_at %}· Updated: {{ post.updated_at|date:"M d, Y H:i" }}{% endif %}
+            </div>
+            <div style="white-space:pre-wrap;line-height:1.7;margin-bottom:1rem;">{{ post.body }}</div>
+
+            {% if post.author == user %}
+                <div class="actions">
+                    <form method="post" action="{% url 'forum:post_delete' post.pk %}" data-confirm="Delete this post?" style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger">Delete Post</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="card-title">Answers ({{ post.answers.count }})</h2>
+
+    {% if user.is_authenticated %}
+        <div class="tool-card mb-3" style="border-style:solid;">
+            <h3 style="margin-bottom:0.75rem;font-size:1rem;">Your Answer</h3>
+            <form method="post" action="{% url 'forum:answer_create' post.pk %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    {{ answer_form.body }}
+                </div>
+                <button type="submit" class="btn btn-primary">Post Answer</button>
+            </form>
+        </div>
+    {% endif %}
+
+    {% for answer in post.answers.all %}
+        <div class="answer-item {% if answer.is_accepted %}accepted{% endif %}">
+            <div class="flex" style="gap:1rem;">
+                <div class="vote-buttons">
+                    <form method="post" action="{% url 'forum:answer_vote' post.pk answer.pk %}" style="margin:0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="value" value="1">
+                        <button type="submit" class="vote-btn">▲</button>
+                    </form>
+                    <span class="score">{{ answer.score }}</span>
+                    <form method="post" action="{% url 'forum:answer_vote' post.pk answer.pk %}" style="margin:0;">
+                        {% csrf_token %}
+                        <input type="hidden" name="value" value="-1">
+                        <button type="submit" class="vote-btn">▼</button>
+                    </form>
+                </div>
+                <div style="flex:1;">
+                    {% if answer.is_accepted %}
+                        <span class="badge badge-success mb-1">✅ Accepted Answer</span>
+                    {% endif %}
+                    <div style="white-space:pre-wrap;line-height:1.6;margin-bottom:0.5rem;">{{ answer.body }}</div>
+                    <div class="post-meta">
+                        by <strong>{{ answer.author.profile.display_name|default:answer.author.username }}</strong>
+                        · {{ answer.created_at|date:"M d, Y H:i" }}
+                    </div>
+                    <div class="actions">
+                        {% if post.author == user and not answer.is_accepted %}
+                            <form method="post" action="{% url 'forum:answer_accept' post.pk answer.pk %}" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-success">Accept</button>
+                            </form>
+                        {% endif %}
+                        {% if answer.author == user %}
+                            <form method="post" action="{% url 'forum:answer_delete' post.pk answer.pk %}" data-confirm="Delete this answer?" style="display:inline;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <p class="muted" style="padding:1rem;text-align:center;">No answers yet. Be the first to answer!</p>
+    {% endfor %}
+</div>
+
+<div class="card">
+    <h2 class="card-title">Comments ({{ post.comments.count }})</h2>
+
+    {% if user.is_authenticated %}
+        <div class="tool-card mb-3" style="border-style:solid;">
+            <form method="post" action="{% url 'forum:comment_create' post.pk %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label class="form-label" style="font-size:0.9rem;">Add a comment</label>
+                    {{ comment_form.body }}
+                </div>
+                <button type="submit" class="btn btn-sm btn-secondary">Post Comment</button>
+            </form>
+        </div>
+    {% endif %}
+
+    {% for comment in post.comments.all %}
+        <div class="comment-item">
+            <div style="white-space:pre-wrap;margin-bottom:0.25rem;">{{ comment.body }}</div>
+            <div class="muted" style="font-size:0.8rem;">
+                — <strong>{{ comment.author.profile.display_name|default:comment.author.username }}</strong>
+                · {{ comment.created_at|date:"M d, Y H:i" }}
+                {% if comment.author == user %}
+                    <form method="post" action="{% url 'forum:comment_delete' post.pk comment.pk %}" data-confirm="Delete?" style="display:inline;margin-left:0.5rem;">
+                        {% csrf_token %}
+                        <button type="submit" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.8rem;padding:0;">[Delete]</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    {% empty %}
+        <p class="muted" style="padding:1rem;text-align:center;">No comments yet.</p>
+    {% endfor %}
+</div>
+{% endblock %}

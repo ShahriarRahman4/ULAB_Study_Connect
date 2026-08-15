@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Note{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:600px;margin:2rem auto;">
+    <h1 class="section-title" style="font-size:1.5rem;">Delete Note</h1>
+    <p class="mb-2">Are you sure you want to delete this note? This action cannot be undone.</p>
+
+    <div class="tool-card">
+        <strong>{{ object.title }}</strong>
+        <p class="muted" style="font-size:0.85rem;margin-top:0.25rem;">
+            Created: {{ object.created_at|date:"M d, Y" }}
+            · {{ object.pdfs.count }} PDF{{ object.pdfs.count|pluralize }} attached
+        </p>
+    </div>
+
+    <form method="post" style="margin-top:1.5rem;">
+        {% csrf_token %}
+        <div class="actions">
+            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+            <a href="{% url 'notes:note_detail' object.pk %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

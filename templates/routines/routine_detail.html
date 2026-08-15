@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ routine.title }} - Routine Detail{% endblock %}
+
+{% block content %}
+<a href="{% url 'routines:routine_list' %}" class="btn btn-secondary btn-sm mb-2">← All Routines</a>
+
+<div class="card">
+    <div class="flex flex-between flex-start">
+        <div style="flex:1;">
+            <h1 class="section-title" style="margin:0;font-size:1.5rem;">
+                {{ routine.title }}
+                {% if routine.is_active %}<span class="badge badge-success">Active</span>{% endif %}
+                <span class="badge badge-info">v{{ routine.version }}</span>
+            </h1>
+            <p class="muted" style="font-size:0.85rem;margin:0.25rem 0;">
+                Uploaded by {{ routine.uploaded_by.profile.display_name|default:routine.uploaded_by.username }}
+                · {{ routine.uploaded_at|date:"M d, Y H:i" }}
+            </p>
+            {% if routine.notes %}
+                <p class="muted mt-1" style="font-size:0.9rem;">📝 {{ routine.notes }}</p>
+            {% endif %}
+        </div>
+        <div class="actions">
+            {% if user.is_staff %}
+                <form method="post" action="{% url 'routines:routine_delete' routine.pk %}" data-confirm="Delete this routine?" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                </form>
+            {% endif %}
+            <a href="{% url 'routines:saved_routine_create' routine.pk %}" class="btn btn-sm btn-primary">💾 Save this Routine</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="flex flex-between flex-center mb-2">
+        <h2 class="card-title" style="margin:0;">
+            Exams ({{ exams|length }})
+            {% if selected_codes %}
+                · Filtered by: {{ selected_codes|join:", " }}
+            {% endif %}
+        </h2>
+        <form method="get" style="margin:0;">
+            <input type="text" name="course_code" class="input" placeholder="Filter course code..." value="{{ request.GET.course_code }}" style="width:220px;display:inline;">
+            <button type="submit" class="btn btn-sm btn-secondary">Filter</button>
+            <a href="{% url 'routines:routine_detail' routine.pk %}" class="btn btn-sm btn-secondary">Clear</a>
+        </form>
+    </div>
+
+    {% if exams %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Course Title</th>
+                    <th>Section</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Room</th>
+                    <th>Faculty</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ex in exams %}
+                    <tr>
+                        <td><strong>{{ ex.course_code }}</strong></td>
+                        <td>{{ ex.course_name }}</td>
+                        <td>
+                            {% if ex.section %}
+                                <span class="badge badge-warning">{{ ex.section }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ ex.exam_date|date:"M d, D" }}</td>
+                        <td>{{ ex.exam_time }}</td>
+                        <td>{{ ex.room }}</td>
+                        <td>{{ ex.faculty }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p class="muted" style="text-align:center;padding:2rem;">No exams match the current filter.</p>
+    {% endif %}
+</div>
+{% endblock %}
