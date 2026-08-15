@@ -26,43 +26,50 @@
 
   <div class="routine-table-card reveal">
     <div class="routine-table-head">
-      <h2>Your notes <span class="badge" style="background:#f1f5f9;color:#64748b;">2</span></h2>
+      <h2>Your notes <span class="badge" style="background:#f1f5f9;color:#64748b;">{{ note_count }}</span></h2>
     </div>
     <div class="table-scroll routine-table-wrap">
       <table class="table-premium">
         <thead><tr><th>Title</th><th>Course</th><th>Updated</th><th>Visibility</th><th style="text-align:right;">Action</th></tr></thead>
         <tbody>
+          {% for note in notes %}
           <tr>
-            <td style="font-weight:600;">Week 4 — Recursion</td>
-            <td><span class="badge badge-indigo">CSE 310</span></td>
-            <td style="color:#94a3b8;">Aug 14, 2026</td>
-            <td><span class="badge badge-cyan"><i class="fa-solid fa-globe"></i> Public</span></td>
+            <td style="font-weight:600;"><a href="{% url 'notes:note_detail' note.pk %}" style="color:inherit;text-decoration:none;">{{ note.title }}</a></td>
+            <td>{% if note.course %}<span class="badge badge-indigo">{{ note.course.code }}</span>{% elif note.course_text %}<span class="badge badge-indigo">{{ note.course_text }}</span>{% else %}—{% endif %}</td>
+            <td style="color:#94a3b8;">{{ note.updated_at|date:"M j, Y" }}</td>
+            <td>{% if note.is_public %}<span class="badge badge-cyan"><i class="fa-solid fa-globe"></i> Public</span>{% else %}<span class="badge" style="background:#f1f5f9;color:#64748b;"><i class="fa-solid fa-lock"></i> Private</span>{% endif %}{% if note.pdfs.all %} <span class="badge badge-amber">PDF</span>{% endif %}</td>
             <td style="text-align:right;white-space:nowrap;">
-              <a href="{% url 'notes:public_notes' %}" class="btn-outline" style="padding:6px 12px;font-size:0.78rem;">Open</a>
-              <a href="/notes/note_confirm_delete.html" class="btn-ghost" style="padding:6px 10px;font-size:0.78rem;color:#dc2626;">Delete</a>
+              <a href="{% url 'notes:note_detail' note.pk %}" class="btn-outline" style="padding:6px 12px;font-size:0.78rem;">Open</a>
+              <a href="{% url 'notes:note_edit' note.pk %}" class="btn-ghost" style="padding:6px 10px;font-size:0.78rem;">Edit</a>
+              <a href="{% url 'notes:note_delete' note.pk %}" class="btn-ghost" style="padding:6px 10px;font-size:0.78rem;color:#dc2626;">Delete</a>
             </td>
           </tr>
-          <tr>
-            <td style="font-weight:600;">SQL Joins Practice</td>
-            <td><span class="badge badge-indigo">CSE 311</span></td>
-            <td style="color:#94a3b8;">Aug 11, 2026</td>
-            <td><span class="badge" style="background:#f1f5f9;color:#64748b;"><i class="fa-solid fa-lock"></i> Private</span></td>
-            <td style="text-align:right;white-space:nowrap;">
-              <a href="{% url 'notes:public_notes' %}" class="btn-outline" style="padding:6px 12px;font-size:0.78rem;">Open</a>
-              <a href="/notes/note_confirm_delete.html" class="btn-ghost" style="padding:6px 10px;font-size:0.78rem;color:#dc2626;">Delete</a>
-            </td>
-          </tr>
+          {% empty %}
+          <tr><td colspan="5">No notes yet. Create one to get started.</td></tr>
+          {% endfor %}
         </tbody>
       </table>
     </div>
     <div class="exam-card-list">
-      <a href="{% url 'notes:public_notes' %}" class="exam-card">
-        <div class="exam-card-top"><div><div class="exam-card-course">Week 4 — Recursion</div><div class="exam-card-name">CSE 310 · Aug 14</div></div><span class="badge badge-cyan">Public</span></div>
+      {% for note in notes %}
+      <a href="{% url 'notes:note_detail' note.pk %}" class="exam-card">
+        <div class="exam-card-top"><div><div class="exam-card-course">{{ note.title }}</div><div class="exam-card-name">{% if note.course_text %}{{ note.course_text }} · {% endif %}{{ note.updated_at|date:"M j" }}</div></div>{% if note.is_public %}<span class="badge badge-cyan">Public</span>{% else %}<span class="badge">Private</span>{% endif %}</div>
       </a>
-      <a href="{% url 'notes:public_notes' %}" class="exam-card">
-        <div class="exam-card-top"><div><div class="exam-card-course">SQL Joins Practice</div><div class="exam-card-name">CSE 311 · Aug 11</div></div><span class="badge">Private</span></div>
-      </a>
+      {% endfor %}
     </div>
   </div>
+
+  {% if pdfs %}
+  <div class="routine-table-card reveal" style="margin-top:24px;">
+    <div class="routine-table-head"><h2>Your PDFs</h2></div>
+    <div class="exam-card-list">
+      {% for pdf in pdfs %}
+      <a href="{% url 'notes:pdf_detail' pdf.pk %}" class="exam-card">
+        <div class="exam-card-top"><div><div class="exam-card-course">{{ pdf.title }}</div><div class="exam-card-name">{% if pdf.note %}{{ pdf.note.title }} · {% endif %}{{ pdf.created_at|date:"M j" }}</div></div><span class="badge badge-amber">PDF</span></div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

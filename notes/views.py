@@ -26,6 +26,37 @@ from .summarizer import summarize_text
 from .text_utils import extract_pdf_text
 
 
+def _extract_and_store_text(pdf: PdfDocument) -> None:
+    try:
+        with pdf.file.open("rb") as fh:
+            text = extract_pdf_text(fh)[:200000]
+        PdfDocument.objects.filter(pk=pdf.pk).update(extracted_text=text)
+    except Exception:
+        pass
+
+
+def _attach_or_replace_pdf(user, note, upload, title=""):
+    existing = note.pdfs.filter(user=user).order_by("-created_at").first() if note else None
+    name = (title or "").strip() or getattr(upload, "name", "document.pdf")
+    if existing:
+        existing.title = name
+        existing.file = upload
+        existing.save()
+        _extract_and_store_text(existing)
+        return existing
+    pdf = PdfDocument(user=user, note=note, title=name, file=upload)
+    pdf.save()
+    _extract_and_store_text(pdf)
+    return pdf
+
+
+def _pdf_visible_q(user):
+    q = Q(note__is_public=True)
+    if user.is_authenticated:
+        q |= Q(user=user)
+    return q
+
+
 class NoteOwnerMixin(UserPassesTestMixin):
     def test_func(self):
         obj = self.get_object()
@@ -42,8 +73,15 @@ class MyNotesListView(LoginRequiredMixin, ListView):
         return (
             Note.objects.filter(owner=self.request.user)
             .select_related("course", "course__department")
+            .prefetch_related("pdfs")
             .order_by("-updated_at")
         )
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["pdfs"] = PdfDocument.objects.filter(user=self.request.user).select_related("note")[:20]
+        ctx["note_count"] = Note.objects.filter(owner=self.request.user).count()
+        return ctx
 
 
 class PublicNotesListView(ListView):
@@ -53,11 +91,29 @@ class PublicNotesListView(ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        return (
+        qs = (
             Note.objects.filter(is_public=True)
             .select_related("owner", "course")
+            .prefetch_related("pdfs")
             .order_by("-updated_at")
         )
+        q = (self.request.GET.get("q") or "").strip()
+        if q:
+            qs = qs.filter(
+                Q(title__icontains=q)
+                | Q(body_markdown__icontains=q)
+                | Q(course_text__icontains=q)
+                | Q(owner__username__icontains=q)
+            )
+        return qs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        public = Note.objects.filter(is_public=True)
+        ctx["public_count"] = public.count()
+        ctx["course_count"] = public.exclude(course_text="").values("course_text").distinct().count()
+        ctx["search_q"] = (self.request.GET.get("q") or "").strip()
+        return ctx
 
 
 class NoteDetailView(DetailView):
@@ -72,16 +128,43 @@ class NoteDetailView(DetailView):
             return qs.filter(Q(is_public=True) | Q(owner=user))
         return qs.filter(is_public=True)
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        note = self.object
+        ctx["is_owner"] = self.request.user.is_authenticated and note.owner_id == self.request.user.id
+        ctx["youtube_ids"] = note.youtube_video_ids()
+        ctx["related_notes"] = (
+            Note.objects.filter(is_public=True)
+            .exclude(pk=note.pk)
+            .select_related("owner")
+            .order_by("-updated_at")[:3]
+        )
+        return ctx
+
 
 class NoteCreateView(LoginRequiredMixin, CreateView):
     model = Note
     form_class = NoteForm
     template_name = "notes/note_form.html"
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["is_edit"] = False
+        return ctx
+
     def form_valid(self, form):
         form.instance.owner = self.request.user
+        response = super().form_valid(form)
+        upload = form.cleaned_data.get("pdf_file")
+        if upload:
+            _attach_or_replace_pdf(
+                self.request.user,
+                self.object,
+                upload,
+                form.cleaned_data.get("pdf_title") or self.object.title,
+            )
         messages.success(self.request, "Note saved successfully!")
-        return super().form_valid(form)
+        return response
 
     def form_invalid(self, form):
         messages.error(self.request, "There was an error saving your note. Please check the fields below.")
@@ -96,9 +179,24 @@ class NoteUpdateView(LoginRequiredMixin, NoteOwnerMixin, UpdateView):
     form_class = NoteForm
     template_name = "notes/note_form.html"
 
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["is_edit"] = True
+        ctx["note"] = self.object
+        return ctx
+
     def form_valid(self, form):
+        response = super().form_valid(form)
+        upload = form.cleaned_data.get("pdf_file")
+        if upload:
+            _attach_or_replace_pdf(
+                self.request.user,
+                self.object,
+                upload,
+                form.cleaned_data.get("pdf_title") or self.object.title,
+            )
         messages.success(self.request, "Note updated.")
-        return super().form_valid(form)
+        return response
 
     def get_success_url(self):
         return reverse("notes:note_detail", args=[self.object.pk])
@@ -108,6 +206,11 @@ class NoteDeleteView(LoginRequiredMixin, NoteOwnerMixin, DeleteView):
     model = Note
     template_name = "notes/note_confirm_delete.html"
     success_url = reverse_lazy("notes:note_list")
+    context_object_name = "note"
+
+    def form_valid(self, form):
+        messages.success(self.request, "Note deleted.")
+        return super().form_valid(form)
 
 
 class PdfUploadView(LoginRequiredMixin, CreateView):
@@ -115,9 +218,15 @@ class PdfUploadView(LoginRequiredMixin, CreateView):
     form_class = PdfUploadForm
     template_name = "notes/pdf_upload.html"
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        return kwargs
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["note"] = getattr(self, "note", None)
+        ctx["is_update"] = False
         return ctx
 
     def dispatch(self, request, *args, **kwargs):
@@ -136,29 +245,85 @@ class PdfUploadView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.user = self.request.user
-        form.instance.note = self.note
+        form.instance.note = self.note or form.cleaned_data.get("note")
         response = super().form_valid(form)
-        obj = self.object
-        try:
-            obj.refresh_from_db()
-            with obj.file.open("rb") as fh:
-                text = extract_pdf_text(fh)[:200000]
-            PdfDocument.objects.filter(pk=obj.pk).update(extracted_text=text)
-        except Exception:
-            messages.warning(
-                self.request,
-                "PDF was saved. Text extraction could not run-you can still open, read, and annotate it.",
-            )
+        _extract_and_store_text(self.object)
         messages.success(self.request, "PDF uploaded.")
         return response
 
     def get_success_url(self):
+        if self.object.note_id:
+            return reverse("notes:note_detail", args=[self.object.note_id])
         return reverse("notes:pdf_detail", args=[self.object.pk])
 
 
-class PdfFileServeView(LoginRequiredMixin, View):
+class PdfUpdateView(LoginRequiredMixin, UpdateView):
+    model = PdfDocument
+    form_class = PdfUploadForm
+    template_name = "notes/pdf_upload.html"
+
+    def get_queryset(self):
+        return PdfDocument.objects.filter(user=self.request.user).select_related("note")
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["user"] = self.request.user
+        kwargs["require_file"] = False
+        return kwargs
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx["note"] = self.object.note
+        ctx["is_update"] = True
+        ctx["pdf"] = self.object
+        return ctx
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial["note"] = self.object.note_id
+        return initial
+
+    def form_valid(self, form):
+        note = form.cleaned_data.get("note")
+        self.object.note = note
+        upload = self.request.FILES.get("file")
+        response = super().form_valid(form)
+        if upload:
+            _extract_and_store_text(self.object)
+        messages.success(self.request, "PDF updated.")
+        return response
+
+    def get_success_url(self):
+        if self.object.note_id:
+            return reverse("notes:note_detail", args=[self.object.note_id])
+        return reverse("notes:pdf_detail", args=[self.object.pk])
+
+
+class PdfDeleteView(LoginRequiredMixin, DeleteView):
+    model = PdfDocument
+    template_name = "notes/note_confirm_delete.html"
+    context_object_name = "pdf"
+
+    def get_queryset(self):
+        return PdfDocument.objects.filter(user=self.request.user)
+
+    def get_success_url(self):
+        note = self.object.note
+        if note:
+            return reverse("notes:note_detail", args=[note.pk])
+        return reverse("notes:note_list")
+
+    def form_valid(self, form):
+        messages.success(self.request, "PDF deleted.")
+        return super().form_valid(form)
+
+
+class PdfFileServeView(View):
     def get(self, request, pk, *args, **kwargs):
-        pdf = get_object_or_404(PdfDocument, pk=pk, user=request.user)
+        pdf = get_object_or_404(
+            PdfDocument.objects.filter(_pdf_visible_q(request.user)).select_related("note"),
+            pk=pk,
+        )
         if not pdf.file or not pdf.file.name:
             raise Http404()
         attachment = request.GET.get("attachment") == "1"
@@ -176,24 +341,31 @@ class PdfFileServeView(LoginRequiredMixin, View):
             filename=name,
         )
         response["X-Content-Type-Options"] = "nosniff"
+        response["Content-Disposition"] = (
+            f'attachment; filename="{name}"' if attachment else f'inline; filename="{name}"'
+        )
+        response["Accept-Ranges"] = "bytes"
+        response["X-Frame-Options"] = "SAMEORIGIN"
         return response
 
 
-class PdfDetailView(LoginRequiredMixin, DetailView):
+class PdfDetailView(DetailView):
     model = PdfDocument
     template_name = "notes/pdf_detail.html"
     context_object_name = "pdf"
 
     def get_queryset(self):
-        return PdfDocument.objects.filter(user=self.request.user).prefetch_related(
-            "annotations"
-        )
+        return PdfDocument.objects.filter(_pdf_visible_q(self.request.user)).select_related(
+            "note"
+        ).prefetch_related("annotations")
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         pdf = self.object
         stream_path = reverse("notes:pdf_file", args=[pdf.pk])
-        ctx["pdf_absolute_url"] = self.request.build_absolute_uri(stream_path)
+        ctx["pdf_file_url"] = stream_path
+        ctx["pdf_download_url"] = f"{stream_path}?attachment=1"
+        ctx["is_owner"] = self.request.user.is_authenticated and pdf.user_id == self.request.user.id
         return ctx
 
 
@@ -203,7 +375,9 @@ class SummarizeToolView(LoginRequiredMixin, FormView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["notes"] = Note.objects.filter(owner=self.request.user).order_by("-updated_at")[:50]
+        ctx["notes"] = Note.objects.filter(
+            Q(owner=self.request.user) | Q(is_public=True)
+        ).order_by("-updated_at")[:50]
         ctx["pdfs"] = PdfDocument.objects.filter(user=self.request.user).order_by("-created_at")[
             :30
         ]
@@ -214,7 +388,10 @@ class SummarizeToolView(LoginRequiredMixin, FormView):
         note_id = self.request.POST.get("note_id")
         pdf_id = self.request.POST.get("pdf_id")
         if note_id:
-            note = get_object_or_404(Note, pk=note_id, owner=self.request.user)
+            note = get_object_or_404(
+                Note.objects.filter(Q(owner=self.request.user) | Q(is_public=True)),
+                pk=note_id,
+            )
             text = note.body_markdown
         elif pdf_id:
             pdf = get_object_or_404(PdfDocument, pk=pdf_id, user=self.request.user)
@@ -231,7 +408,9 @@ class QuizToolView(LoginRequiredMixin, FormView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["notes"] = Note.objects.filter(owner=self.request.user).order_by("-updated_at")[:50]
+        ctx["notes"] = Note.objects.filter(
+            Q(owner=self.request.user) | Q(is_public=True)
+        ).order_by("-updated_at")[:50]
         ctx["pdfs"] = PdfDocument.objects.filter(user=self.request.user).order_by("-created_at")[
             :30
         ]
@@ -241,15 +420,31 @@ class QuizToolView(LoginRequiredMixin, FormView):
         text = form.cleaned_data.get("text") or ""
         note_id = self.request.POST.get("note_id")
         if note_id:
-            note = get_object_or_404(Note, pk=note_id, owner=self.request.user)
+            note = get_object_or_404(
+                Note.objects.filter(Q(owner=self.request.user) | Q(is_public=True)),
+                pk=note_id,
+            )
             text = note.body_markdown
         pdf_id = self.request.POST.get("pdf_id")
         if pdf_id:
             pdf = get_object_or_404(PdfDocument, pk=pdf_id, user=self.request.user)
             text = pdf.extracted_text or text
         data = generate_quiz(text)
+        quiz = {
+            "mcqs": [
+                {
+                    "question": m.question,
+                    "choices": m.choices,
+                    "answer_index": m.answer_index,
+                }
+                for m in data.get("mcqs") or []
+            ],
+            "short": [
+                {"prompt": s.prompt, "hint": s.hint} for s in data.get("short") or []
+            ],
+        }
         return self.render_to_response(
-            self.get_context_data(form=form, quiz=data, source_preview=text[:800])
+            self.get_context_data(form=form, quiz=quiz, source_preview=text[:800])
         )
 
 

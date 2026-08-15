@@ -9,38 +9,38 @@
       <div class="forum-hero-copy">
         <span class="section-label"><i class="fa-solid fa-comments"></i> Student community</span>
         <h1 class="forum-hero-title">Ask, answer, and<br><span class="text-gradient">learn together</span></h1>
-        <p class="forum-hero-desc">The ULAB academic forum for exam doubts, course help, and campus discussions — built for students, not noise.</p>
+        <p class="forum-hero-desc">Write in plain text. Share exam doubts, course help, and campus discussions.</p>
         <div class="forum-hero-actions">
+          {% if user.is_authenticated %}
           <a href="{% url 'forum:post_create' %}" class="btn-primary"><span class="btn-shine" aria-hidden="true"></span><span class="btn-label"><i class="fa-solid fa-pen-to-square"></i> New thread</span></a>
-          <a href="{% url 'users:register' %}" class="btn-outline">Join to reply</a>
+          {% else %}
+          <a href="{% url 'users:login' %}" class="btn-primary"><span class="btn-label">Sign in to post</span></a>
+          {% endif %}
         </div>
       </div>
       <div class="forum-hero-stats">
-        <div class="resources-stat-card"><span class="resources-stat-value">890</span><span class="resources-stat-label">Active threads</span></div>
-        <div class="resources-stat-card"><span class="resources-stat-value">1,240</span><span class="resources-stat-label">Students</span></div>
-        <div class="resources-stat-card resources-stat-card-accent"><span class="resources-stat-value">42</span><span class="resources-stat-label">Answered today</span></div>
+        <div class="resources-stat-card"><span class="resources-stat-value">{{ thread_count }}</span><span class="resources-stat-label">Threads</span></div>
       </div>
     </div>
   </div>
 
   <div class="forum-layout">
-
     <div class="forum-main">
-      <div class="resources-toolbar forum-toolbar reveal">
+      <form class="resources-toolbar forum-toolbar reveal" method="get">
         <div class="resources-search">
           <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-          <input type="search" id="forum-search" class="input-premium" placeholder="Search threads, courses, authors..." aria-label="Search forum">
+          <input type="search" name="q" id="forum-search" class="input-premium" placeholder="Search threads..." value="{{ search_q }}" aria-label="Search forum">
         </div>
-        <div class="resources-filters forum-filters" role="group" aria-label="Filter threads">
-          <button type="button" class="filter-pill active" data-filter="all">All</button>
-          <button type="button" class="filter-pill" data-filter="question">Questions</button>
-          <button type="button" class="filter-pill" data-filter="discussion">Discussions</button>
+        <div class="resources-filters forum-filters">
+          <a href="{% url 'forum:feed' %}" class="filter-pill {% if filter_type == 'all' %}active{% endif %}">All</a>
+          <a href="?type=question{% if search_q %}&q={{ search_q }}{% endif %}" class="filter-pill {% if filter_type == 'question' %}active{% endif %}">Questions</a>
+          <a href="?type=discussion{% if search_q %}&q={{ search_q }}{% endif %}" class="filter-pill {% if filter_type == 'discussion' %}active{% endif %}">Discussions</a>
         </div>
-      </div>
+      </form>
 
       <div class="forum-thread-list reveal" id="forum-thread-list">
         {% for post in posts %}
-        <a href="{% url 'forum:post_detail' post.pk %}" class="forum-thread-card" data-type="{{ post.post_type }}" data-search="{{ post.title }} {{ post.body }}">
+        <a href="{% url 'forum:post_detail' post.pk %}" class="forum-thread-card" data-type="{{ post.post_type }}" data-search="{{ post.title }} {{ post.body }} {{ post.subject_text }}">
           <div class="forum-vote">
             <i class="fa-solid fa-caret-up"></i>
             <strong>{{ post.score }}</strong>
@@ -49,7 +49,8 @@
           <div class="forum-thread-body">
             <div class="forum-thread-tags">
               <span class="badge {% if post.post_type == 'question' %}badge-amber{% else %}badge-cyan{% endif %}">{{ post.get_post_type_display }}</span>
-              {% if post.subject %}<span class="forum-thread-topic">{{ post.subject.name }}{% if post.category %} · {{ post.category.name }}{% endif %}</span>{% endif %}
+              {% if post.subject_text %}<span class="forum-thread-topic">{{ post.subject_text }}</span>
+              {% elif post.subject %}<span class="forum-thread-topic">{{ post.subject.name }}</span>{% endif %}
             </div>
             <h2 class="forum-thread-title">{{ post.title }}</h2>
             <p class="forum-thread-excerpt">{{ post.body|truncatewords:28 }}</p>
@@ -57,50 +58,46 @@
               <span class="resource-avatar">{{ post.author.username|slice:":1"|upper }}</span>
               <span class="forum-meta-name">{{ post.author.get_full_name|default:post.author.username }}</span>
               <span>{{ post.created_at|timesince }} ago</span>
-              <span><i class="fa-regular fa-comment"></i> {{ post.answers.count }} answers</span>
+              <span><i class="fa-regular fa-comment"></i> {{ post.answer_count }} answers</span>
             </div>
           </div>
           <span class="forum-thread-open">Open <i class="fa-solid fa-arrow-right"></i></span>
         </a>
         {% empty %}
-        <p class="resources-empty" style="display:block;">No threads yet. Start the first discussion.</p>
+        <p class="resources-empty" style="display:block;">No threads yet. Write the first one in text.</p>
         {% endfor %}
-      </div>
-
-      <div class="resources-empty hidden" id="forum-empty" aria-live="polite">
-        <div class="resources-empty-icon"><i class="fa-solid fa-comments"></i></div>
-        <h3>No threads found</h3>
-        <p>Try another search, or start a new thread for the community.</p>
-        <a href="{% url 'forum:post_create' %}" class="btn-primary">New thread</a>
       </div>
     </div>
 
     <aside class="forum-aside reveal">
+      {% if trending %}
       <div class="note-sidebar-card">
-        <h3><i class="fa-solid fa-fire"></i> Trending topics</h3>
+        <h3><i class="fa-solid fa-fire"></i> Topics</h3>
         <div class="forum-topic-list">
-          <span class="forum-topic-chip">Algorithms</span>
-          <span class="forum-topic-chip">Databases</span>
-          <span class="forum-topic-chip">Finals</span>
-          <span class="forum-topic-chip">Campus</span>
-          <span class="forum-topic-chip">CSE 310</span>
+          {% for topic in trending %}
+          <span class="forum-topic-chip">{{ topic }}</span>
+          {% endfor %}
         </div>
       </div>
+      {% endif %}
       <div class="note-sidebar-card">
         <h3>Community rules</h3>
         <ul class="pdf-tips">
-          <li>Be specific — include course code when you can.</li>
-          <li>Search before posting a duplicate question.</li>
-          <li>Share reasoning, not just the final answer.</li>
+          <li>Write in plain text only.</li>
+          <li>Include the course code when you can.</li>
+          <li>Be specific so others can help.</li>
         </ul>
       </div>
       <div class="note-sidebar-card forum-aside-cta">
         <h3>Have a question?</h3>
-        <p class="pdf-aside-copy">Start a thread and get help from students who've taken the same courses.</p>
+        <p class="pdf-aside-copy">Start a thread in text and get help from classmates.</p>
+        {% if user.is_authenticated %}
         <a href="{% url 'forum:post_create' %}" class="btn-primary btn-sidebar-full"><i class="fa-solid fa-pen-to-square"></i> New thread</a>
+        {% else %}
+        <a href="{% url 'users:login' %}" class="btn-primary btn-sidebar-full">Sign in to post</a>
+        {% endif %}
       </div>
     </aside>
-
   </div>
 </div>
 {% endblock %}

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 
 from django.conf import settings
@@ -51,7 +53,8 @@ class Note(models.Model):
             if not s:
                 continue
             m = re.search(
-                r"(?:v=|\/v\/|youtu\.be\/|\/embed\/|watch\?v=|\&v=|\/shorts\/|\/live\/|\/watch\/|^)([A-Za-z0-9_-]{11})(?:\?|\&|\/|#|$)", s
+                r"(?:youtube(?:-nocookie)?\.com\/(?:watch\?.*?v=|embed\/|v\/|shorts\/|live\/)|youtu\.be\/|v=)([A-Za-z0-9_-]{11})",
+                s,
             )
             if m:
                 ids.append(m.group(1))

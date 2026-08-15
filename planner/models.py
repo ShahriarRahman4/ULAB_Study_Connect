@@ -10,7 +10,20 @@ User = get_user_model()
 
 class StudyPlan(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='study_plans')
-    routine = models.ForeignKey('routines.SavedRoutine', on_delete=models.SET_NULL, null=True, blank=True, related_name='study_plans')
+    routine = models.ForeignKey(
+        "routines.SavedRoutine",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="study_plans",
+    )
+    official_routine = models.ForeignKey(
+        "routines.RoutineFile",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="study_plans",
+    )
     name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -120,18 +133,17 @@ class CoursePlan(models.Model):
         return f"{self.course_code} - {self.plan.name}"
 
     def _get_exam_date(self):
-        if self.plan.routine is None:
-            return None
         try:
-            exams = getattr(self.plan.routine, 'exams', None)
+            source = self.plan.official_routine or self.plan.routine
+            if source is None:
+                return None
+            exams = getattr(source, "exams", None)
             if exams is None:
                 return None
-            if hasattr(exams, 'all'):
-                for exam in exams.all():
-                    if getattr(exam, 'course_code', None) == self.course_code:
-                        return getattr(exam, 'exam_date', None)
-                    if getattr(exam, 'subject', None) == self.course_code:
-                        return getattr(exam, 'exam_date', None)
+            qs = exams.all() if hasattr(exams, "all") else exams
+            for exam in qs:
+                if getattr(exam, "course_code", None) == self.course_code:
+                    return getattr(exam, "exam_date", None)
         except Exception:
             return None
         return None

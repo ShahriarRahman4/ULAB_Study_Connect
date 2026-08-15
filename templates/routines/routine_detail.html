@@ -1,57 +1,71 @@
 {% extends "base.html" %}
-{% block title %}Routine detail — ULAB StudyConnect{% endblock %}
+{% block title %}{{ routine.title }} — ULAB StudyConnect{% endblock %}
 {% block content %}
 <div class="routine-page">
   <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
     <a href="{% url 'routines:routine_list' %}"><i class="fa-solid fa-calendar-days"></i> Routines</a>
     <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-    <span class="breadcrumb-current">CSE 310 · Sec 01</span>
+    <span class="breadcrumb-current">{{ routine.title }}</span>
   </nav>
 
   <header class="routine-detail-hero reveal">
     <div class="note-detail-badges">
-      <span class="badge badge-indigo">Summer 2026 Finals</span>
-      <span class="badge badge-amber">Room A-301</span>
-      <span class="badge badge-cyan">Sec 01</span>
+      <span class="badge badge-indigo">v{{ routine.version }}</span>
+      {% if routine.is_active %}<span class="badge badge-cyan">Active</span>{% endif %}
     </div>
-    <h1 class="routine-detail-code">CSE 310</h1>
-    <p class="resources-hero-desc" style="margin-bottom:0;">Algorithms — official exam sitting</p>
-    <div class="routine-meta-grid">
-      <div class="routine-meta-item"><span>Date</span><strong>Sat, Aug 22, 2026</strong></div>
-      <div class="routine-meta-item"><span>Time</span><strong>10:00 AM – 1:00 PM</strong></div>
-      <div class="routine-meta-item"><span>Faculty</span><strong>Dr. Rahman</strong></div>
-      <div class="routine-meta-item"><span>Venue</span><strong>Building A · 301</strong></div>
-    </div>
+    <h1 class="routine-detail-code">{{ routine.title }}</h1>
+    <p class="resources-hero-desc" style="margin-bottom:0;">{{ exams|length }} exam sittings{% if routine.notes %} · {{ routine.notes }}{% endif %}</p>
     <div class="resources-hero-actions" style="margin-top:24px;">
       <a href="{% url 'planner:study_planner' %}" class="btn-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> Add to planner</a>
-      <a href="{% url 'notes:public_notes' %}" class="btn-outline"><i class="fa-solid fa-book-open"></i> Course notes</a>
-      <a href="{% url 'routines:saved_routine_list' %}" class="btn-ghost"><i class="fa-regular fa-bookmark"></i> Save routine</a>
+      <a href="{% url 'routines:saved_routine_create' routine.pk %}" class="btn-outline"><i class="fa-regular fa-bookmark"></i> Save routine</a>
+      {% if can_manage %}
+      <a href="{% url 'routines:routine_update' routine.pk %}" class="btn-ghost"><i class="fa-solid fa-pen-to-square"></i> Update</a>
+      {% endif %}
     </div>
   </header>
 
   <div class="forum-layout reveal">
     <div>
-      <div class="note-article">
-        <h2>What to bring</h2>
-        <ul>
-          <li>Student ID and admit card</li>
-          <li>Blue/black pens — no programmable calculators unless announced</li>
-          <li>Arrive 15 minutes early; seating is posted outside A-301</li>
-        </ul>
-        <h2>Related on StudyConnect</h2>
-        <p>Use the Week 4 recursion notes and forum thread on Master Theorem if this sitting covers divide-and-conquer.</p>
+      <div class="routine-table-card">
+        <div class="table-scroll routine-table-wrap">
+          <table class="table-premium">
+            <thead>
+              <tr><th>Course</th><th>Sec</th><th>Date</th><th>Time</th><th>Room</th><th>Faculty</th></tr>
+            </thead>
+            <tbody>
+              {% for exam in exams %}
+              <tr>
+                <td><div style="font-weight:600;">{{ exam.course_code }}</div><div style="font-size:0.75rem;color:#94a3b8;">{{ exam.course_name }}</div></td>
+                <td>{{ exam.section }}</td>
+                <td>{{ exam.exam_date|date:"M j, Y" }}</td>
+                <td>{{ exam.exam_time }}</td>
+                <td>{{ exam.room|default:"—" }}</td>
+                <td>{{ exam.faculty|default:"—" }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6">No exams in this file.</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
     <aside class="forum-aside">
       <div class="note-sidebar-card">
-        <h3>Next exams</h3>
-        <a href="{% url 'routines:routine_list' %}" class="forum-related-link"><strong>CSE 311 · Database</strong><span>Aug 25 · 2:00 PM · B-210</span></a>
-        <a href="{% url 'routines:routine_list' %}" class="forum-related-link"><strong>CSE 203 · Discrete</strong><span>Aug 28 · 10:00 AM · C-105</span></a>
+        <h3>Upcoming</h3>
+        {% for exam in next_exams %}
+        <div class="forum-related-link"><strong>{{ exam.course_code }} · {{ exam.section }}</strong><span>{{ exam.exam_date|date:"M j" }} · {{ exam.exam_time }} · {{ exam.room }}</span></div>
+        {% empty %}
+        <p style="font-size:0.85rem;color:#64748b;">No sittings listed.</p>
+        {% endfor %}
       </div>
+      {% if can_manage %}
       <div class="note-sidebar-card">
         <h3>Admin</h3>
-        <a href="/routines/routine_confirm_delete.html" class="note-sidebar-action" style="color:#dc2626;"><i class="fa-solid fa-trash" style="color:#dc2626;"></i> Delete this listing</a>
+        <a href="{% url 'routines:routine_update' routine.pk %}" class="note-sidebar-action"><i class="fa-solid fa-pen-to-square"></i> Update this routine</a>
+        <a href="{% url 'routines:routine_delete' routine.pk %}" class="note-sidebar-action" style="color:#dc2626;"><i class="fa-solid fa-trash" style="color:#dc2626;"></i> Delete this listing</a>
       </div>
+      {% endif %}
     </aside>
   </div>
 </div>

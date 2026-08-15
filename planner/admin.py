@@ -7,7 +7,7 @@ class StudyPlanAdmin(admin.ModelAdmin):
     list_display = ("name", "user", "created_at")
     list_filter = ("created_at",)
     search_fields = ("name", "user__username")
-    raw_id_fields = ("user", "routine")
+    raw_id_fields = ("user", "routine", "official_routine")
 
 
 @admin.register(CoursePlan)

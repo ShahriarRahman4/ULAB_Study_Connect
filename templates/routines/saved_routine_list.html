@@ -2,19 +2,19 @@
 {% block title %}Saved Routines — ULAB StudyConnect{% endblock %}
 {% block content %}
 <div class="routine-page">
-  <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
+  <nav class="breadcrumb breadcrumb-premium" aria-label="Breadcrumb">
     <a href="{% url 'users:dashboard' %}"><i class="fa-solid fa-house"></i> Dashboard</a>
     <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
     <span class="breadcrumb-current">Saved routines</span>
   </nav>
 
-  <div class="resources-hero reveal">
+  <div class="resources-hero">
     <div class="resources-hero-bg" aria-hidden="true"></div>
     <div class="resources-hero-inner">
       <div>
         <span class="section-label"><i class="fa-solid fa-bookmark"></i> Saved</span>
         <h1 class="resources-hero-title">Your exam<br><span class="text-gradient">routines</span></h1>
-        <p class="resources-hero-desc">Personalized schedules ready for study planning. Open a routine or send it to the planner.</p>
+        <p class="resources-hero-desc">Uploaded files and personal selections you saved for planning.</p>
         <div class="resources-hero-actions">
           <a href="{% url 'routines:routine_list' %}" class="btn-outline">Browse official list</a>
         </div>
@@ -22,31 +22,47 @@
     </div>
   </div>
 
-  <div class="blog-grid reveal">
+  <h2 style="margin:24px 0 12px;font-size:1.1rem;font-weight:700;">Uploaded files</h2>
+  <div class="blog-grid">
+    {% for item in uploaded_routines %}
     <article class="blog-card" style="padding:0;">
       <div class="blog-card-body">
-        <div class="blog-card-meta"><span class="badge badge-indigo">Finals</span><span class="blog-card-date">Saved Aug 10, 2026</span></div>
-        <h3>Spring 2026 Finals</h3>
-        <p>4 exams · CSE 310, 311, 203, ENG 101</p>
+        <div class="blog-card-meta">
+          <span class="badge badge-indigo">v{{ item.version }}</span>
+          {% if item.is_active %}<span class="badge badge-cyan">Active</span>{% endif %}
+          <span class="blog-card-date">{{ item.uploaded_at|date:"M j, Y" }}</span>
+        </div>
+        <h3>{{ item.title|default:"Untitled routine" }}</h3>
+        <p>{{ item.exam_count }} exam{{ item.exam_count|pluralize }}</p>
         <div class="resources-hero-actions" style="margin-top:16px;">
-          <a href="{% url 'routines:routine_list' %}" class="btn-outline" style="padding:8px 14px;font-size:0.8rem;">Open</a>
-          <a href="{% url 'planner:study_planner' %}" class="btn-primary" style="padding:8px 14px;font-size:0.8rem;">Create plan</a>
-          <a href="/routines/saved_routine_confirm_delete.html" class="btn-ghost" style="padding:8px 14px;font-size:0.8rem;color:#dc2626;">Delete</a>
+          <a href="{% url 'routines:routine_detail' item.pk %}" class="btn-outline" style="padding:8px 14px;font-size:0.8rem;">Open</a>
+          <a href="{% url 'routines:saved_routine_create' item.pk %}" class="btn-primary" style="padding:8px 14px;font-size:0.8rem;">Save selection</a>
         </div>
       </div>
     </article>
+    {% empty %}
+    <p>No uploaded exam files yet.</p>
+    {% endfor %}
+  </div>
+
+  <h2 style="margin:32px 0 12px;font-size:1.1rem;font-weight:700;">My saved selections</h2>
+  <div class="blog-grid">
+    {% for item in saved_routines %}
     <article class="blog-card" style="padding:0;">
       <div class="blog-card-body">
-        <div class="blog-card-meta"><span class="badge badge-cyan">Midterms</span><span class="blog-card-date">Saved Aug 4, 2026</span></div>
-        <h3>CSE Midterms</h3>
-        <p>3 exams · focused CSE track</p>
+        <div class="blog-card-meta"><span class="badge badge-indigo">Saved</span><span class="blog-card-date">{{ item.created_at|date:"M j, Y" }}</span></div>
+        <h3>{{ item.name }}</h3>
+        <p>{{ item.exams.count }} exam{{ item.exams.count|pluralize }}</p>
         <div class="resources-hero-actions" style="margin-top:16px;">
-          <a href="{% url 'routines:routine_filter' %}" class="btn-outline" style="padding:8px 14px;font-size:0.8rem;">Open</a>
+          <a href="{% url 'routines:saved_routine_detail' item.pk %}" class="btn-outline" style="padding:8px 14px;font-size:0.8rem;">Open</a>
           <a href="{% url 'planner:study_planner' %}" class="btn-primary" style="padding:8px 14px;font-size:0.8rem;">Create plan</a>
-          <a href="/routines/saved_routine_confirm_delete.html" class="btn-ghost" style="padding:8px 14px;font-size:0.8rem;color:#dc2626;">Delete</a>
+          <a href="{% url 'routines:saved_routine_delete' item.pk %}" class="btn-ghost" style="padding:8px 14px;font-size:0.8rem;color:#dc2626;">Delete</a>
         </div>
       </div>
     </article>
+    {% empty %}
+    <p>No personal selections yet. Open an uploaded file and tap Save selection.</p>
+    {% endfor %}
   </div>
 </div>
 {% endblock %}

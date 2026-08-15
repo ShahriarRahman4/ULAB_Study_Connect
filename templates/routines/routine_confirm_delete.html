@@ -10,7 +10,7 @@
   <div class="confirm-card">
     <div class="confirm-icon"><i class="fa-solid fa-trash"></i></div>
     <h1>Delete this routine listing?</h1>
-    <p>This is a frontend preview. Confirming returns you to the exam list — no data is changed.</p>
+    <p><strong>{{ routine.title }}</strong> (v{{ routine.version }}) and all of its exam rows will be removed.</p>
     <form method="post" data-confirm="Delete this routine listing?" class="confirm-actions">
       {% csrf_token %}
       <a href="{% url 'routines:routine_list' %}" class="btn-ghost">Cancel</a>

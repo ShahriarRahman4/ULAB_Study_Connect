@@ -127,7 +127,7 @@
     });
   }
 
-  // Scroll reveal
+  // Scroll reveal (threshold 0 so tall blocks like exam tables still appear)
   var reveals = document.querySelectorAll(".reveal");
   if (reveals.length && "IntersectionObserver" in window) {
     var observer = new IntersectionObserver(
@@ -139,9 +139,16 @@
           }
         });
       },
-      { threshold: 0.12, rootMargin: "0px 0px -40px 0px" }
+      { threshold: 0, rootMargin: "80px 0px 80px 0px" }
     );
-    reveals.forEach(function (el) { observer.observe(el); });
+    reveals.forEach(function (el) {
+      var rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        el.classList.add("visible");
+      } else {
+        observer.observe(el);
+      }
+    });
   } else {
     reveals.forEach(function (el) { el.classList.add("visible"); });
   }
@@ -149,11 +156,22 @@
   // Study planner result is rendered by Django after POST
 
 
-  // Notes quiz demo check
+  // Notes quiz scoring
   var quizForm = document.getElementById("quiz-form");
   if (quizForm) {
     quizForm.addEventListener("submit", function (e) {
       e.preventDefault();
+      var groups = {};
+      quizForm.querySelectorAll("input[type=radio]").forEach(function (input) {
+        groups[input.name] = groups[input.name] || { total: true, correct: false };
+        if (input.checked && input.getAttribute("data-correct") === "1") {
+          groups[input.name].correct = true;
+        }
+      });
+      var keys = Object.keys(groups);
+      var score = keys.filter(function (k) { return groups[k].correct; }).length;
+      var scoreEl = document.getElementById("quiz-score-text");
+      if (scoreEl) scoreEl.textContent = score + " / " + keys.length;
       var result = document.getElementById("quiz-result");
       if (result) {
         result.classList.remove("hidden");
@@ -443,15 +461,8 @@
     });
   }
 
-  // Forum vote buttons (visual only)
-  document.querySelectorAll(".forum-vote-btn").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var group = btn.parentElement;
-      if (!group) return;
-      group.querySelectorAll(".forum-vote-btn").forEach(function (b) { b.classList.remove("is-active"); });
-      btn.classList.add("is-active");
-    });
-  });
+  // Forum vote buttons submit their forms; skip visual-only hijack
+
 
   // Password visibility toggle
   document.querySelectorAll("[data-toggle-password]").forEach(function (btn) {

@@ -1,75 +1,92 @@
 from django import forms
 
-from .models import Answer, Category, Comment, Post, Subject
+from .models import Answer, Comment, Post
 
 
 class PostForm(forms.ModelForm):
     class Meta:
         model = Post
-        fields = ("subject", "category", "title", "body", "post_type")
-        labels = {"subject": "Subject", "category": "Category"}
+        fields = ("title", "subject_text", "post_type", "body")
+        labels = {
+            "title": "Title",
+            "subject_text": "Topic",
+            "post_type": "Type",
+            "body": "Your text",
+        }
         widgets = {
-            "subject": forms.Select(attrs={"class": "select-premium", "id": "id_subject"}),
-            "category": forms.Select(attrs={"class": "select-premium", "id": "id_category"}),
-            "title": forms.TextInput(attrs={"class": "input-premium no-icon"}),
-            "body": forms.Textarea(attrs={"class": "textarea-premium", "rows": 10}),
+            "title": forms.TextInput(
+                attrs={
+                    "class": "input-premium no-icon",
+                    "placeholder": "Write a clear title",
+                    "maxlength": "300",
+                }
+            ),
+            "subject_text": forms.TextInput(
+                attrs={
+                    "class": "input-premium no-icon",
+                    "placeholder": "e.g. CSE 310 or Campus",
+                }
+            ),
             "post_type": forms.Select(attrs={"class": "select-premium"}),
+            "body": forms.Textarea(
+                attrs={
+                    "class": "textarea-premium",
+                    "rows": 12,
+                    "placeholder": "Write everything in plain text…",
+                }
+            ),
         }
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["category"].required = False
-        self.fields["category"].empty_label = "--- Optional ---"
-        self.fields["subject"].required = False
-        self.fields["subject"].empty_label = "--- Choose subject ---"
+    def clean_title(self):
+        title = (self.cleaned_data.get("title") or "").strip()
+        if not title:
+            raise forms.ValidationError("Please write a title.")
+        return title
 
-        subject_id = None
-        if self.data:
-            raw = self.data.get("subject")
-            if raw not in (None, ""):
-                try:
-                    subject_id = int(raw)
-                except (TypeError, ValueError):
-                    pass
-        elif self.instance.pk and self.instance.subject_id:
-            subject_id = self.instance.subject_id
-
-        if subject_id:
-            self.fields["category"].queryset = Category.objects.filter(
-                subject_id=subject_id
-            ).order_by("name")
-        else:
-            self.fields["category"].queryset = Category.objects.none()
-
-    def clean(self):
-        cleaned = super().clean()
-        subject = cleaned.get("subject")
-        category = cleaned.get("category")
-        if category and subject and category.subject_id != subject.pk:
-            self.add_error(
-                "category",
-                "Choose a category that belongs to the selected subject.",
-            )
-        return cleaned
+    def clean_body(self):
+        body = (self.cleaned_data.get("body") or "").strip()
+        if not body:
+            raise forms.ValidationError("Please write your post in text.")
+        return body
 
 
 class AnswerForm(forms.ModelForm):
     class Meta:
         model = Answer
         fields = ("body",)
-        widgets = {"body": forms.Textarea(attrs={"class": "textarea-premium", "rows": 6})}
+        widgets = {
+            "body": forms.Textarea(
+                attrs={
+                    "class": "textarea-premium",
+                    "rows": 6,
+                    "placeholder": "Write your answer in plain text…",
+                }
+            )
+        }
+
+    def clean_body(self):
+        body = (self.cleaned_data.get("body") or "").strip()
+        if not body:
+            raise forms.ValidationError("Please write your answer in text.")
+        return body
 
 
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         fields = ("body",)
-        widgets = {"body": forms.Textarea(attrs={"class": "textarea", "rows": 4})}
+        widgets = {
+            "body": forms.Textarea(
+                attrs={
+                    "class": "textarea-premium",
+                    "rows": 3,
+                    "placeholder": "Write a comment in text…",
+                }
+            )
+        }
 
-
-class SubjectFilterForm(forms.Form):
-    subject = forms.ModelChoiceField(
-        queryset=Subject.objects.all(),
-        required=False,
-        widget=forms.Select(attrs={"class": "input"}),
-    )
+    def clean_body(self):
+        body = (self.cleaned_data.get("body") or "").strip()
+        if not body:
+            raise forms.ValidationError("Please write a comment.")
+        return body

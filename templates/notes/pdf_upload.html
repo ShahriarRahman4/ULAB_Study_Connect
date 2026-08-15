@@ -1,16 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Upload PDF — ULAB StudyConnect{% endblock %}
+{% block title %}{% if is_update %}Update PDF{% else %}Upload PDF{% endif %} — ULAB StudyConnect{% endblock %}
 {% block content %}
 <div class="pdf-upload-page">
-
   <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
-    <a href="{% url 'users:dashboard' %}"><i class="fa-solid fa-house"></i> Dashboard</a>
-    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
     <a href="{% url 'notes:note_list' %}">My Notes</a>
     <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-    <a href="{% url 'notes:public_notes' %}">Week 4 — Recursion</a>
-    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
-    <span class="breadcrumb-current">Upload PDF</span>
+    {% if note %}<a href="{% url 'notes:note_detail' note.pk %}">{{ note.title }}</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>{% endif %}
+    <span class="breadcrumb-current">{% if is_update %}Update PDF{% else %}Upload PDF{% endif %}</span>
   </nav>
 
   <div class="pdf-upload-hero reveal">
@@ -18,63 +15,50 @@
     <div class="pdf-upload-hero-inner">
       <div>
         <span class="section-label"><i class="fa-solid fa-file-pdf"></i> Attachments</span>
-        <h1 class="pdf-upload-title">Upload a PDF<br><span class="text-gradient">to this note</span></h1>
-        <p class="pdf-upload-desc">Attach lecture slides, readings, or scanned notes. Students can preview them alongside your write-up.</p>
-      </div>
-      <div class="pdf-upload-hero-pills">
-        <span class="pdf-hero-pill"><i class="fa-solid fa-lock"></i> Private until published</span>
-        <span class="pdf-hero-pill"><i class="fa-solid fa-file-circle-check"></i> PDF only · 25 MB</span>
+        <h1 class="pdf-upload-title">{% if is_update %}Update PDF{% else %}Upload a PDF{% endif %}{% if note %}<br><span class="text-gradient">for this note</span>{% endif %}</h1>
+        <p class="pdf-upload-desc">{% if is_update %}Replace the file or change the title. If the note is public, everyone can open this PDF.{% else %}Attach lecture slides or readings. Public notes show the PDF in the gallery.{% endif %}</p>
       </div>
     </div>
   </div>
 
   <div class="pdf-upload-layout reveal">
-
     <form method="post" enctype="multipart/form-data" class="pdf-upload-form" id="pdf-upload-form">
       {% csrf_token %}
       {{ form.non_field_errors }}
       <div class="pdf-field">
         <label class="label-premium" for="{{ form.title.id_for_label }}">Document title</label>
         {{ form.title }}
+        {{ form.title.errors }}
       </div>
+      {% if form.note %}
       <div class="pdf-field">
-        <label class="label-premium" for="{{ form.file.id_for_label }}">PDF file</label>
+        <label class="label-premium" for="{{ form.note.id_for_label }}">Attach to note</label>
+        {{ form.note }}
+        <p style="font-size:0.8rem;color:#64748b;margin-top:6px;">Choose a public note so this PDF appears in the public gallery.</p>
+      </div>
+      {% endif %}
+      <div class="pdf-field">
+        <label class="label-premium" for="{{ form.file.id_for_label }}">PDF file{% if is_update %} (optional){% endif %}</label>
         {{ form.file }}
         {{ form.file.errors }}
+        {% if is_update and pdf.file %}<p style="font-size:0.8rem;color:#64748b;margin-top:6px;">Current file: {{ pdf.file.name }}</p>{% endif %}
       </div>
       <div class="pdf-form-actions">
-        <a href="{% url 'notes:public_notes' %}" class="btn-ghost">Cancel</a>
+        <a href="{% if note %}{% url 'notes:note_detail' note.pk %}{% else %}{% url 'notes:note_list' %}{% endif %}" class="btn-ghost">Cancel</a>
         <button class="btn-primary" type="submit">
-          <span class="btn-shine" aria-hidden="true"></span>
-          <span class="btn-label"><i class="fa-solid fa-cloud-arrow-up"></i> Upload PDF</span>
+          <span class="btn-label"><i class="fa-solid fa-cloud-arrow-up"></i> {% if is_update %}Save PDF{% else %}Upload PDF{% endif %}</span>
         </button>
       </div>
     </form>
-
     <aside class="pdf-upload-aside">
       <div class="note-sidebar-card">
         <h3><i class="fa-solid fa-circle-info"></i> Guidelines</h3>
         <ul class="pdf-tips">
-          <li>Use a clear title so the file is easy to find later.</li>
-          <li>Prefer searchable PDFs over photos of slides.</li>
-          <li>Do not upload copyrighted textbooks without permission.</li>
+          <li>Max 15 MB, PDF only.</li>
+          <li>Public notes make this file visible to everyone.</li>
         </ul>
       </div>
-      <div class="note-sidebar-card">
-        <h3>Attached to</h3>
-        <a href="{% url 'notes:public_notes' %}" class="pdf-linked-note">
-          <span class="badge badge-indigo">CSE 310</span>
-          <strong>Week 4 — Recursion</strong>
-          <span>Shahriar · Public note</span>
-        </a>
-      </div>
-      <div class="note-sidebar-card">
-        <h3>After upload</h3>
-        <p class="pdf-aside-copy">You'll land on a preview page where you can open the document and return to the note.</p>
-        <a href="{% url 'notes:pdf_upload' %}" class="note-related-link">See preview layout <i class="fa-solid fa-arrow-right"></i></a>
-      </div>
     </aside>
-
   </div>
 </div>
 {% endblock %}

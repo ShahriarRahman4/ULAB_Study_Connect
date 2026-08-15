@@ -14,6 +14,7 @@ urlpatterns = [
     path("planner/", include("planner.urls", namespace="planner")),
     path("notes/", include("notes.urls", namespace="notes")),
     path("forum/", include("forum.urls", namespace="forum")),
+    path("chat/", include("chatbot.urls", namespace="chatbot")),
 ]
 
 if settings.DEBUG:

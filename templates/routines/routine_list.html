@@ -17,39 +17,58 @@
         <p class="resources-hero-desc">Browse the latest ULAB exam schedule. Filter by course and section, then send it to your study planner.</p>
         <div class="resources-hero-actions">
           <a href="{% url 'routines:saved_routine_list' %}" class="btn-outline"><i class="fa-solid fa-bookmark"></i> Saved routines</a>
-          <a href="{% url 'routines:routine_upload' %}" class="btn-ghost"><i class="fa-solid fa-upload"></i> Upload</a>
+          {% if can_manage %}
+          <a href="{% url 'routines:routine_upload' %}" class="btn-primary"><i class="fa-solid fa-upload"></i> Upload</a>
+          {% if latest_routine %}
+          <a href="{% url 'routines:routine_update' latest_routine.pk %}" class="btn-ghost"><i class="fa-solid fa-pen-to-square"></i> Update</a>
+          {% endif %}
+          {% endif %}
         </div>
       </div>
       <div class="resources-hero-stats">
         <div class="resources-stat-card resources-stat-card-accent">
-          <span class="resources-stat-value">v3</span>
-          <span class="resources-stat-label">Summer 2026 Finals</span>
+          <span class="resources-stat-value">{% if latest_routine %}v{{ latest_routine.version }}{% else %}—{% endif %}</span>
+          <span class="resources-stat-label">{% if latest_routine %}{{ latest_routine.title }}{% else %}No routine yet{% endif %}</span>
         </div>
-        <div class="resources-stat-card"><span class="resources-stat-value">4</span><span class="resources-stat-label">Exams listed</span></div>
-        <div class="resources-stat-card"><span class="resources-stat-value">42</span><span class="resources-stat-label">Campus routines</span></div>
+        <div class="resources-stat-card"><span class="resources-stat-value">{{ exam_count }}</span><span class="resources-stat-label">Exams listed</span></div>
+        <div class="resources-stat-card"><span class="resources-stat-value">{{ routines|length }}</span><span class="resources-stat-label">Uploaded files</span></div>
       </div>
     </div>
   </div>
 
-  <div class="routine-layout reveal">
+  <div class="routine-layout">
     <aside class="routine-sidebar">
       <div class="routine-filter-card">
         <h3><i class="fa-solid fa-magnifying-glass" style="color:var(--primary);"></i> Find your exams</h3>
-        <form id="routine-filter-form">
+        <form id="routine-filter-form" method="get" action="{% url 'routines:routine_list' %}">
           <div class="routine-filter-row">
-            <input id="routine-course" class="input-premium no-icon" style="flex:1;" placeholder="Course code" value="CSE 310" aria-label="Course code">
-            <input id="routine-sec" class="input-premium no-icon" style="width:80px;" placeholder="Sec" value="01" aria-label="Section">
+            <input id="routine-course" name="course_code[]" class="input-premium no-icon" style="flex:1;" placeholder="Course code" value="{{ filter_course }}" aria-label="Course code">
+            <input id="routine-sec" name="section[]" class="input-premium no-icon" style="width:80px;" placeholder="Sec" value="{{ filter_section }}" aria-label="Section">
           </div>
           <button class="btn-primary" type="submit" style="width:100%;justify-content:center;"><i class="fa-solid fa-filter"></i> Apply filters</button>
         </form>
-        <a href="{% url 'routines:routine_filter' %}" class="auth-back" style="margin-top:16px;">Open filtered view</a>
+        <a href="{% url 'routines:routine_list' %}" class="auth-back" style="margin-top:16px;">Clear filters</a>
       </div>
+
+      {% if latest_routine and can_manage %}
+      <div class="routine-filter-card" style="margin-top:16px;">
+        <h3>This file</h3>
+        <p style="font-size:0.85rem;color:#64748b;">Uploaded {{ latest_routine.uploaded_at|date:"M j, Y" }}{% if latest_routine.uploaded_by %} by {{ latest_routine.uploaded_by.get_username }}{% endif %}</p>
+        <div class="resources-hero-actions" style="margin-top:12px;flex-wrap:wrap;">
+          <a href="{% url 'routines:routine_update' latest_routine.pk %}" class="btn-outline" style="padding:8px 14px;font-size:0.8rem;">Update file</a>
+          <a href="{% url 'routines:routine_delete' latest_routine.pk %}" class="btn-ghost" style="padding:8px 14px;font-size:0.8rem;color:#dc2626;">Delete</a>
+        </div>
+      </div>
+      {% endif %}
     </aside>
 
     <div>
       <div class="routine-table-card">
         <div class="routine-table-head">
-          <h2>Exam schedule <span class="badge" style="background:#f1f5f9;color:#64748b;" id="routine-count">4</span></h2>
+          <h2>Exam schedule <span class="badge" style="background:#f1f5f9;color:#64748b;" id="routine-count">{{ exam_count }}</span></h2>
+          {% if latest_routine %}
+          <a href="{% url 'routines:saved_routine_create' latest_routine.pk %}{% if filter_course %}?course_code[]={{ filter_course }}&section[]={{ filter_section }}{% endif %}" class="btn-outline" style="padding:10px 16px;font-size:0.82rem;"><i class="fa-regular fa-bookmark"></i> Save selection</a>
+          {% endif %}
           <a href="{% url 'planner:study_planner' %}" class="btn-primary" style="padding:10px 16px;font-size:0.82rem;"><i class="fa-solid fa-wand-magic-sparkles"></i> Create study plan</a>
         </div>
 
@@ -64,11 +83,11 @@
                 <td>{% if latest_routine %}<a href="{% url 'routines:routine_detail' latest_routine.pk %}" style="color:inherit;text-decoration:none;">{% endif %}<div style="font-weight:600;">{{ exam.course_code }}</div><div style="font-size:0.75rem;color:#94a3b8;">{{ exam.course_name }}</div>{% if latest_routine %}</a>{% endif %}</td>
                 <td style="text-align:center;font-weight:700;">{{ exam.section }}</td>
                 <td><div style="font-weight:600;">{{ exam.exam_date|date:"M j, Y" }}</div><div style="font-size:0.75rem;color:#4f46e5;font-weight:600;">{{ exam.exam_time }}</div></td>
-                <td><span class="badge badge-amber">{{ exam.room }}</span></td>
-                <td style="font-size:0.85rem;font-weight:600;">{{ exam.faculty }}</td>
+                <td><span class="badge badge-amber">{{ exam.room|default:"—" }}</span></td>
+                <td style="font-size:0.85rem;font-weight:600;">{{ exam.faculty|default:"—" }}</td>
               </tr>
               {% empty %}
-              <tr><td colspan="5">No exams in the active routine yet.</td></tr>
+              <tr><td colspan="5">{% if latest_routine %}No exams match this filter.{% else %}No exams yet. Upload a spreadsheet to get started.{% endif %}</td></tr>
               {% endfor %}
             </tbody>
           </table>
@@ -78,7 +97,7 @@
           {% for exam in exams %}
           <div class="exam-card routine-row" data-search="{{ exam.course_code }} {{ exam.course_name }} {{ exam.section }}">
             <div class="exam-card-top"><div><div class="exam-card-course">{{ exam.course_code }}</div><div class="exam-card-name">{{ exam.course_name }}</div></div><span class="badge badge-indigo">Sec {{ exam.section }}</span></div>
-            <div class="exam-card-meta"><span><i class="fa-regular fa-calendar"></i> {{ exam.exam_date|date:"M j" }} · {{ exam.exam_time }}</span><span class="badge badge-amber">{{ exam.room }}</span><span>{{ exam.faculty }}</span></div>
+            <div class="exam-card-meta"><span><i class="fa-regular fa-calendar"></i> {{ exam.exam_date|date:"M j" }} · {{ exam.exam_time }}</span><span class="badge badge-amber">{{ exam.room|default:"—" }}</span><span>{{ exam.faculty|default:"—" }}</span></div>
           </div>
           {% endfor %}
         </div>
