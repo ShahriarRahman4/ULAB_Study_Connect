@@ -1,107 +1,25 @@
-{% extends 'base.html' %}
-
-{% block title %}Save Routine Selection{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Save routine — ULAB StudyConnect{% endblock %}
 {% block content %}
-<a href="{% if routine_file %}{% url 'routines:routine_detail' routine_file.pk %}{% else %}{% url 'routines:routine_list' %}{% endif %}" class="btn btn-secondary btn-sm mb-2">← Back</a>
-
-<div class="card">
-    <h1 class="section-title" style="font-size:1.5rem;">
-        {% if routine_file %}Save Exams from: {{ routine_file.title }}{% else %}Save Exam Selection{% endif %}
-    </h1>
-    <p class="muted" style="margin:0 0 1rem;">Select which exams you want to include in your personal saved routine. You can then use this in the <a href="{% url 'planner:study_planner' %}">Study Planner</a> to auto-generate a study schedule.</p>
-
-    <form method="post">
-        {% csrf_token %}
-        <div class="form-group">
-            <label class="form-label">Saved Routine Name *</label>
-            <input type="text" name="name" class="input" required value="{{ initial_name }}">
-        </div>
-
-        {% if selected_pairs %}
-            <div class="alert alert-info" style="margin-bottom:1rem;">
-                Filter active:
-                {% for code, section in selected_pairs %}
-                    <span class="badge badge-info">{{ code }}{% if section %} Sec {{ section }}{% endif %}</span>
-                {% endfor %}
-                <a href="{% url 'routines:saved_routine_create' routine_file.pk %}" style="float:right;">Clear filter</a>
-            </div>
-        {% endif %}
-
-        <div class="flex flex-between flex-center mb-1">
-            <h2 class="card-title" style="margin:0;">Available Exams ({{ exams|length }})</h2>
-            <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;">
-                <input type="checkbox" id="select-all" class="checkbox" onchange="
-                    document.querySelectorAll('input[name=\'exam_ids[]\']').forEach(cb => cb.checked = this.checked);
-                ">
-                <span>Select All</span>
-            </label>
-        </div>
-
-        <div style="max-height:500px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:0.25rem;">
-            {% if exams %}
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width:40px;">✓</th>
-                            <th>Code</th>
-                            <th>Course Title</th>
-                            <th>Section</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Room</th>
-                            <th>Faculty</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for ex in exams %}
-                            <tr>
-                                <td style="text-align:center;">
-                                    <input type="checkbox" name="exam_ids[]" value="{{ ex.pk }}" class="checkbox exam-checkbox"
-                                        {% if ex.pk in selected_exam_ids %}checked{% endif %}>
-                                </td>
-                                <td><strong>{{ ex.course_code }}</strong></td>
-                                <td>{{ ex.course_name }}</td>
-                                <td>{% if ex.section %}<span class="badge badge-warning">{{ ex.section }}</span>{% endif %}</td>
-                                <td>{{ ex.exam_date|date:"M d, D" }}</td>
-                                <td>{{ ex.exam_time }}</td>
-                                <td>{{ ex.room }}</td>
-                                <td>{{ ex.faculty }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p class="muted" style="text-align:center;padding:2rem;">
-                    No exams match the current filter. <a href="{% url 'routines:routine_detail' routine_file.pk %}">Go back and try different filters</a>.
-                </p>
-            {% endif %}
-        </div>
-
-        <div class="mt-2 flex flex-between flex-center">
-            <span class="muted" style="font-size:0.9rem;"><span id="selected-count">0</span> exam(s) selected</span>
-            <button type="submit" class="btn btn-primary" {% if not exams %}disabled{% endif %}>💾 Save This Selection</button>
-        </div>
-    </form>
+<div class="routine-page">
+  <h1 class="resources-hero-title">Save a personal routine</h1>
+  <form method="post" class="pdf-upload-form" style="margin-top:1.5rem;">
+    {% csrf_token %}
+    <div class="pdf-field">
+      <label class="label-premium" for="name">Name</label>
+      <input id="name" name="name" class="input-premium no-icon" value="{{ initial_name }}" required>
+    </div>
+    <div class="pdf-field">
+      {% for exam in exams %}
+      <label class="about-value-card" style="display:flex;gap:12px;align-items:flex-start;margin-bottom:8px;">
+        <input type="checkbox" name="exam_ids[]" value="{{ exam.pk }}" {% if exam.pk in selected_exam_ids %}checked{% endif %}>
+        <span><strong>{{ exam.course_code }}</strong> Sec {{ exam.section }} — {{ exam.exam_date }} {{ exam.exam_time }}</span>
+      </label>
+      {% empty %}
+      <p>No exams to save.</p>
+      {% endfor %}
+    </div>
+    <button type="submit" class="btn-primary">Save routine</button>
+  </form>
 </div>
-
-{% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const checkboxes = document.querySelectorAll('.exam-checkbox');
-    const countEl = document.getElementById('selected-count');
-    const selectAll = document.getElementById('select-all');
-
-    function updateCount() {
-        let checked = 0;
-        checkboxes.forEach(cb => { if (cb.checked) checked++; });
-        if (countEl) countEl.textContent = checked;
-        if (selectAll) selectAll.checked = checkboxes.length > 0 && checked === checkboxes.length;
-    }
-
-    checkboxes.forEach(cb => cb.addEventListener('change', updateCount));
-    updateCount();
-});
-</script>
-{% endblock %}
 {% endblock %}

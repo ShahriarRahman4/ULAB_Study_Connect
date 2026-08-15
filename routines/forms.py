@@ -8,7 +8,7 @@ class RoutineUploadForm(forms.ModelForm):
         model = RoutineFile
         fields = ("title", "file", "notes")
         widgets = {
-            "title": forms.TextInput(attrs={"class": "input", "placeholder": "e.g. Fall 2025 Final"}),
-            "file": forms.FileInput(attrs={"class": "input", "accept": ".xlsx"}),
-            "notes": forms.Textarea(attrs={"class": "textarea", "rows": 2}),
+            "title": forms.TextInput(attrs={"class": "input-premium no-icon", "placeholder": "e.g. Fall 2025 Final"}),
+            "file": forms.FileInput(attrs={"class": "input-premium no-icon", "accept": ".xlsx"}),
+            "notes": forms.Textarea(attrs={"class": "textarea-premium", "rows": 2}),
         }

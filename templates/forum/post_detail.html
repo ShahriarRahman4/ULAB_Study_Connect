@@ -1,144 +1,136 @@
-{% extends 'base.html' %}
-
-{% block title %}{{ post.title }} - Forum{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}How do I analyze merge sort time complexity? — Forum{% endblock %}
 {% block content %}
-<a href="{% url 'forum:feed' %}" class="btn btn-secondary btn-sm mb-2">← Back to Forum</a>
+<div class="forum-page forum-detail-page">
 
-<div class="card">
-    <div class="flex" style="gap:1rem;">
-        <div class="vote-buttons">
-            <form method="post" action="{% url 'forum:post_vote' post.pk %}" style="margin:0;">
-                {% csrf_token %}
-                <input type="hidden" name="value" value="1">
-                <button type="submit" class="vote-btn" title="Upvote">▲</button>
-            </form>
-            <span class="score">{{ post.score }}</span>
-            <form method="post" action="{% url 'forum:post_vote' post.pk %}" style="margin:0;">
-                {% csrf_token %}
-                <input type="hidden" name="value" value="-1">
-                <button type="submit" class="vote-btn" title="Downvote">▼</button>
-            </form>
+  <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
+    <a href="{% url 'forum:feed' %}"><i class="fa-solid fa-comments"></i> Forum</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <span class="breadcrumb-current">Merge sort time complexity</span>
+  </nav>
+
+  <div class="forum-layout">
+    <div class="forum-main">
+
+      <article class="forum-post-card reveal">
+        <div class="forum-post-vote" aria-label="Score">
+          <button type="button" class="forum-vote-btn" aria-label="Upvote"><i class="fa-solid fa-caret-up"></i></button>
+          <strong id="forum-score">24</strong>
+          <button type="button" class="forum-vote-btn" aria-label="Downvote"><i class="fa-solid fa-caret-down"></i></button>
         </div>
-        <div style="flex:1;">
-            <h1 class="section-title" style="margin:0 0 0.5rem;font-size:1.5rem;">{{ post.title }}</h1>
-            <div class="post-meta mb-2">
-                <span class="badge badge-primary">{{ post.get_post_type_display }}</span>
-                {% if post.subject %}<span class="badge badge-success">{{ post.subject.name }}</span>{% endif %}
-                {% if post.category %}<span class="badge badge-warning">{{ post.category.name }}</span>{% endif %}
-                · Posted by <strong>{{ post.author.profile.display_name|default:post.author.username }}</strong>
-                · {{ post.created_at|date:"M d, Y H:i" }}
-                {% if post.updated_at != post.created_at %}· Updated: {{ post.updated_at|date:"M d, Y H:i" }}{% endif %}
+        <div class="forum-post-content">
+          <div class="forum-thread-tags">
+            <span class="badge badge-amber">Question</span>
+            <span class="forum-thread-topic">CSE · Algorithms</span>
+            <span class="forum-thread-hot"><i class="fa-solid fa-fire"></i> Trending</span>
+          </div>
+          <h1 class="forum-post-title">How do I analyze merge sort time complexity?</h1>
+          <p class="forum-post-body">I understand the divide step but I'm stuck on the recurrence T(n) = 2T(n/2) + O(n). Can someone walk through Master Theorem for this case, with a small example?</p>
+          <div class="forum-post-footer">
+            <div class="note-detail-author">
+              <span class="note-detail-avatar">T</span>
+              <div>
+                <span class="note-detail-author-name">Tanim</span>
+                <span class="note-detail-author-role">Asked 2 hours ago</span>
+              </div>
             </div>
-            <div style="white-space:pre-wrap;line-height:1.7;margin-bottom:1rem;">{{ post.body }}</div>
-
-            {% if post.author == user %}
-                <div class="actions">
-                    <form method="post" action="{% url 'forum:post_delete' post.pk %}" data-confirm="Delete this post?" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-danger">Delete Post</button>
-                    </form>
-                </div>
-            {% endif %}
+            <div class="forum-post-stats">
+              <span><i class="fa-regular fa-eye"></i> 186 views</span>
+              <span><i class="fa-regular fa-comment"></i> 2 answers</span>
+            </div>
+          </div>
         </div>
+      </article>
+
+      <section class="forum-answers reveal" aria-labelledby="answers-heading">
+        <div class="forum-answers-header">
+          <h2 id="answers-heading">2 Answers</h2>
+          <span class="forum-answers-sort">Sorted by score</span>
+        </div>
+
+        <article class="forum-answer-card forum-answer-accepted">
+          <div class="forum-answer-badge"><i class="fa-solid fa-check"></i> Accepted</div>
+          <div class="forum-post-vote">
+            <button type="button" class="forum-vote-btn is-active" aria-label="Upvote"><i class="fa-solid fa-caret-up"></i></button>
+            <strong>18</strong>
+            <button type="button" class="forum-vote-btn" aria-label="Downvote"><i class="fa-solid fa-caret-down"></i></button>
+          </div>
+          <div class="forum-post-content">
+            <p class="forum-post-body">By Master Theorem, a=2, b=2, f(n)=O(n). Since log<sub>b</sub>(a)=1, case 2 applies and T(n)=Θ(n log n). You pay linear merge work at each of log n levels of the recursion tree.</p>
+            <div class="note-code-block">
+              <div class="note-code-header"><span><i class="fa-solid fa-code"></i> Recurrence</span></div>
+              <pre><code>T(n) = 2T(n/2) + Θ(n)
+     = Θ(n log n)</code></pre>
+            </div>
+            <div class="forum-post-footer">
+              <div class="note-detail-author">
+                <span class="note-detail-avatar">S</span>
+                <div>
+                  <span class="note-detail-author-name">Shahriar</span>
+                  <span class="note-detail-author-role">Answered 1 hour ago</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="forum-answer-card">
+          <div class="forum-post-vote">
+            <button type="button" class="forum-vote-btn" aria-label="Upvote"><i class="fa-solid fa-caret-up"></i></button>
+            <strong>6</strong>
+            <button type="button" class="forum-vote-btn" aria-label="Downvote"><i class="fa-solid fa-caret-down"></i></button>
+          </div>
+          <div class="forum-post-content">
+            <p class="forum-post-body">If Master Theorem feels abstract, draw 3 levels of the tree: n + n/2+n/2 + n/4×4. Each level sums to n, and there are log n levels.</p>
+            <div class="forum-post-footer">
+              <div class="note-detail-author">
+                <span class="note-detail-avatar">A</span>
+                <div>
+                  <span class="note-detail-author-name">Atique</span>
+                  <span class="note-detail-author-role">Answered 45 minutes ago</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <form method="post" action="{% url 'forum:answer_create' post.pk %}" class="forum-reply-form reveal">
+        {% csrf_token %}
+        <h2>Your answer</h2>
+        <p class="forum-reply-hint">Explain the why, not just the formula. Course-mates will thank you later.</p>
+        {{ answer_form.body }}
+        {{ answer_form.body.errors }}
+        <div class="pdf-form-actions">
+          <a href="{% url 'forum:feed' %}" class="btn-ghost">Back to forum</a>
+          <button class="btn-primary" type="submit"><i class="fa-solid fa-paper-plane"></i> Post answer</button>
+        </div>
+      </form>
+
     </div>
-</div>
 
-<div class="card">
-    <h2 class="card-title">Answers ({{ post.answers.count }})</h2>
-
-    {% if user.is_authenticated %}
-        <div class="tool-card mb-3" style="border-style:solid;">
-            <h3 style="margin-bottom:0.75rem;font-size:1rem;">Your Answer</h3>
-            <form method="post" action="{% url 'forum:answer_create' post.pk %}">
-                {% csrf_token %}
-                <div class="form-group">
-                    {{ answer_form.body }}
-                </div>
-                <button type="submit" class="btn btn-primary">Post Answer</button>
-            </form>
-        </div>
-    {% endif %}
-
-    {% for answer in post.answers.all %}
-        <div class="answer-item {% if answer.is_accepted %}accepted{% endif %}">
-            <div class="flex" style="gap:1rem;">
-                <div class="vote-buttons">
-                    <form method="post" action="{% url 'forum:answer_vote' post.pk answer.pk %}" style="margin:0;">
-                        {% csrf_token %}
-                        <input type="hidden" name="value" value="1">
-                        <button type="submit" class="vote-btn">▲</button>
-                    </form>
-                    <span class="score">{{ answer.score }}</span>
-                    <form method="post" action="{% url 'forum:answer_vote' post.pk answer.pk %}" style="margin:0;">
-                        {% csrf_token %}
-                        <input type="hidden" name="value" value="-1">
-                        <button type="submit" class="vote-btn">▼</button>
-                    </form>
-                </div>
-                <div style="flex:1;">
-                    {% if answer.is_accepted %}
-                        <span class="badge badge-success mb-1">✅ Accepted Answer</span>
-                    {% endif %}
-                    <div style="white-space:pre-wrap;line-height:1.6;margin-bottom:0.5rem;">{{ answer.body }}</div>
-                    <div class="post-meta">
-                        by <strong>{{ answer.author.profile.display_name|default:answer.author.username }}</strong>
-                        · {{ answer.created_at|date:"M d, Y H:i" }}
-                    </div>
-                    <div class="actions">
-                        {% if post.author == user and not answer.is_accepted %}
-                            <form method="post" action="{% url 'forum:answer_accept' post.pk answer.pk %}" style="display:inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-success">Accept</button>
-                            </form>
-                        {% endif %}
-                        {% if answer.author == user %}
-                            <form method="post" action="{% url 'forum:answer_delete' post.pk answer.pk %}" data-confirm="Delete this answer?" style="display:inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                            </form>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </div>
-    {% empty %}
-        <p class="muted" style="padding:1rem;text-align:center;">No answers yet. Be the first to answer!</p>
-    {% endfor %}
-</div>
-
-<div class="card">
-    <h2 class="card-title">Comments ({{ post.comments.count }})</h2>
-
-    {% if user.is_authenticated %}
-        <div class="tool-card mb-3" style="border-style:solid;">
-            <form method="post" action="{% url 'forum:comment_create' post.pk %}">
-                {% csrf_token %}
-                <div class="form-group">
-                    <label class="form-label" style="font-size:0.9rem;">Add a comment</label>
-                    {{ comment_form.body }}
-                </div>
-                <button type="submit" class="btn btn-sm btn-secondary">Post Comment</button>
-            </form>
-        </div>
-    {% endif %}
-
-    {% for comment in post.comments.all %}
-        <div class="comment-item">
-            <div style="white-space:pre-wrap;margin-bottom:0.25rem;">{{ comment.body }}</div>
-            <div class="muted" style="font-size:0.8rem;">
-                — <strong>{{ comment.author.profile.display_name|default:comment.author.username }}</strong>
-                · {{ comment.created_at|date:"M d, Y H:i" }}
-                {% if comment.author == user %}
-                    <form method="post" action="{% url 'forum:comment_delete' post.pk comment.pk %}" data-confirm="Delete?" style="display:inline;margin-left:0.5rem;">
-                        {% csrf_token %}
-                        <button type="submit" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:0.8rem;padding:0;">[Delete]</button>
-                    </form>
-                {% endif %}
-            </div>
-        </div>
-    {% empty %}
-        <p class="muted" style="padding:1rem;text-align:center;">No comments yet.</p>
-    {% endfor %}
+    <aside class="forum-aside reveal">
+      <div class="note-sidebar-card">
+        <h3>Related threads</h3>
+        <a href="{% url 'forum:feed' %}" class="forum-related-link">
+          <strong>Master Theorem walkthrough</strong>
+          <span>CSE 310 · 12 votes</span>
+        </a>
+        <a href="{% url 'forum:feed' %}" class="forum-related-link">
+          <strong>Recursion vs iteration for sorting</strong>
+          <span>Algorithms · 8 votes</span>
+        </a>
+        <a href="{% url 'notes:public_notes' %}" class="forum-related-link">
+          <strong>Week 4 — Recursion notes</strong>
+          <span>Resource · Shahriar</span>
+        </a>
+      </div>
+      <div class="note-sidebar-card">
+        <h3>Ask another</h3>
+        <p class="pdf-aside-copy">Stuck on a follow-up? Start a new thread so others can find it later.</p>
+        <a href="{% url 'forum:post_create' %}" class="btn-outline btn-sidebar-full">New thread</a>
+      </div>
+    </aside>
+  </div>
 </div>
 {% endblock %}

@@ -1,43 +1,126 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
 {% block title %}Blog - ULAB StudyConnect{% endblock %}
-
 {% block content %}
-<div class="card">
-    <h1 class="section-title">Latest Updates & Articles</h1>
-    <p>Stay informed about the latest features, study tips, and platform updates from ULAB StudyConnect.</p>
-</div>
+<div class="blog-page">
 
-<div class="card">
-    <h2 class="card-title">New Features Released!</h2>
-    <p class="muted mb-1">Posted on: August 15, 2026</p>
-    <p class="mb-2">We're excited to announce several new features including AI-powered study planning, PDF annotations, and improved quiz generation! Check them out now.</p>
-    <p><strong>Highlights:</strong></p>
-    <ul style="padding-left:1.5rem;">
-        <li>Smart Study Planner with difficulty-based hour allocation</li>
-        <li>Enhanced PDF viewer with highlight, draw, and text annotation tools</li>
-        <li>Automatic text summarization for notes and PDFs</li>
-        <li>MCQ quiz generation from study materials</li>
-        <li>Excel-based exam routine import with auto-parsing</li>
-    </ul>
-</div>
+  <div class="resources-hero reveal">
+    <div class="resources-hero-bg" aria-hidden="true"></div>
+    <div class="resources-hero-inner">
+      <div class="resources-hero-copy">
+        <span class="section-label"><i class="fa-solid fa-newspaper"></i> Insights</span>
+        <h1 class="resources-hero-title">Stories from campus,<br><span class="text-gradient">written for ULAB</span></h1>
+        <p class="resources-hero-desc">Study tactics, product updates, and student journeys — practical writing from the StudyConnect team and community.</p>
+      </div>
+      <div class="resources-hero-stats">
+        <div class="resources-stat-card"><span class="resources-stat-value">12</span><span class="resources-stat-label">Articles</span></div>
+        <div class="resources-stat-card"><span class="resources-stat-value">3</span><span class="resources-stat-label">Topics</span></div>
+        <div class="resources-stat-card resources-stat-card-accent"><span class="resources-stat-value">Aug</span><span class="resources-stat-label">Hackathon 2026</span></div>
+      </div>
+    </div>
+  </div>
 
-<div class="card">
-    <h2 class="card-title">Study Tips for Midterm Preparation</h2>
-    <p class="muted mb-1">Posted on: August 10, 2026</p>
-    <p class="mb-2">Midterms are approaching! Here are some tips to maximize your preparation using ULAB StudyConnect:</p>
-    <ol style="padding-left:1.5rem;">
-        <li class="mb-1">Upload your syllabus PDFs and use the Summarize tool to get key points</li>
-        <li class="mb-1">Generate quizzes from your notes to test your understanding</li>
-        <li class="mb-1">Create a personalized study plan in the Planner based on your exam dates</li>
-        <li class="mb-1">Join the Forum to ask questions about difficult topics</li>
-        <li class="mb-1">Mark notes as Public to share with classmates preparing for the same exams</li>
-    </ol>
-</div>
+  <div class="resources-toolbar blog-toolbar reveal">
+    <div class="resources-search">
+      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      <input type="search" id="blog-search" class="input-premium" placeholder="Search articles..." aria-label="Search blog">
+    </div>
+    <div class="filter-pills blog-filters" role="group" aria-label="Filter posts">
+      <button type="button" class="filter-pill active" data-filter="all">All</button>
+      <button type="button" class="filter-pill" data-filter="tips">Study Tips</button>
+      <button type="button" class="filter-pill" data-filter="stories">Student Stories</button>
+      <button type="button" class="filter-pill" data-filter="updates">Feature Updates</button>
+    </div>
+  </div>
 
-<div class="card">
-    <h2 class="card-title">Community Guidelines</h2>
-    <p class="muted mb-1">Posted on: August 5, 2026</p>
-    <p>Please review our community guidelines for the Forum. Be respectful, be helpful, and always cite sources when sharing external content. Together we create a great learning environment for everyone.</p>
+  <a href="{% url 'planner:study_planner' %}" class="blog-featured reveal" data-type="updates" data-search="study planner features ai scheduling finals">
+    <div class="blog-featured-cover" aria-hidden="true">
+      <i class="fa-solid fa-calendar-check"></i>
+    </div>
+    <div class="blog-featured-body">
+      <div class="blog-card-meta">
+        <span class="badge badge-cyan">Feature Update</span>
+        <span class="blog-card-date">Aug 10, 2026 · 4 min read</span>
+      </div>
+      <h2>New Study Planner features for finals week</h2>
+      <p>AI-assisted blocks, course-aware hours, and a cleaner schedule view — built so ULAB students can plan a 12-day sprint without a spreadsheet.</p>
+      <span class="feature-card-link">Read &amp; try the planner <i class="fa-solid fa-arrow-right"></i></span>
+    </div>
+  </a>
+
+  <div class="blog-grid reveal" id="blog-grid">
+
+    <a href="{% url 'notes:public_notes' %}" class="blog-card" data-type="tips" data-search="study techniques retention spaced repetition notes">
+      <div class="blog-card-cover" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);"><i class="fa-solid fa-book-open"></i></div>
+      <div class="blog-card-body">
+        <div class="blog-card-meta">
+          <span class="badge badge-indigo">Study Tips</span>
+          <span class="blog-card-date">Aug 5, 2026</span>
+        </div>
+        <h3>5 techniques that actually stick before exams</h3>
+        <p>Active recall, spaced notes, and how ULAB students are using the public gallery as a second brain.</p>
+        <span class="blog-card-author"><span class="resource-avatar">S</span> Shahriar</span>
+      </div>
+    </a>
+
+    <a href="{% url 'users:about' %}" class="blog-card" data-type="stories" data-search="fatima grades student story organize studies">
+      <div class="blog-card-cover" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);"><i class="fa-solid fa-users"></i></div>
+      <div class="blog-card-body">
+        <div class="blog-card-meta">
+          <span class="badge badge-amber">Student Story</span>
+          <span class="blog-card-date">Jul 30, 2026</span>
+        </div>
+        <h3>How Fatima organized a chaotic semester</h3>
+        <p>Routines in one tab, notes in another, forum for the questions that used to die in group chat.</p>
+        <span class="blog-card-author"><span class="resource-avatar">F</span> Fatima</span>
+      </div>
+    </a>
+
+    <a href="{% url 'forum:feed' %}" class="blog-card" data-type="tips" data-search="forum questions ask better answers cse">
+      <div class="blog-card-cover" style="background:linear-gradient(135deg,#f59e0b,#d97706);"><i class="fa-solid fa-comments"></i></div>
+      <div class="blog-card-body">
+        <div class="blog-card-meta">
+          <span class="badge badge-indigo">Study Tips</span>
+          <span class="blog-card-date">Jul 22, 2026</span>
+        </div>
+        <h3>How to ask a question that gets answered</h3>
+        <p>Course code, what you tried, and the exact recurrence — a short guide from the forum.</p>
+        <span class="blog-card-author"><span class="resource-avatar">T</span> Tanim</span>
+      </div>
+    </a>
+
+    <a href="{% url 'notes:summarize' %}" class="blog-card" data-type="updates" data-search="ai summarize quiz notes pdf">
+      <div class="blog-card-cover" style="background:linear-gradient(135deg,#06b6d4,#0e7490);"><i class="fa-solid fa-brain"></i></div>
+      <div class="blog-card-body">
+        <div class="blog-card-meta">
+          <span class="badge badge-cyan">Feature Update</span>
+          <span class="blog-card-date">Jul 14, 2026</span>
+        </div>
+        <h3>Turn a PDF into a quiz in one sitting</h3>
+        <p>Summaries and quizzes now sit next to your notes — built for last-night revision, not busywork.</p>
+        <span class="blog-card-author"><span class="resource-avatar">A</span> Atique</span>
+      </div>
+    </a>
+
+    <a href="{% url 'users:mission' %}" class="blog-card" data-type="stories" data-search="hackathon 2026 why we built studyconnect">
+      <div class="blog-card-cover" style="background:linear-gradient(135deg,#4f46e5,#312e81);"><i class="fa-solid fa-trophy"></i></div>
+      <div class="blog-card-body">
+        <div class="blog-card-meta">
+          <span class="badge badge-amber">Student Story</span>
+          <span class="blog-card-date">Jul 8, 2026</span>
+        </div>
+        <h3>Why we built StudyConnect at the hackathon</h3>
+        <p>A campus product, not a generic study app — the mission behind the weekend build.</p>
+        <span class="blog-card-author"><span class="resource-avatar">S</span> Team</span>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="resources-empty hidden" id="blog-empty" aria-live="polite">
+    <div class="resources-empty-icon"><i class="fa-solid fa-newspaper"></i></div>
+    <h3>No articles found</h3>
+    <p>Try another topic, or browse all posts.</p>
+  </div>
+
 </div>
 {% endblock %}

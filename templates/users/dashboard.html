@@ -1,108 +1,170 @@
-{% extends 'base.html' %}
-
-{% block title %}Dashboard - ULAB StudyConnect{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Dashboard — ULAB StudyConnect{% endblock %}
 {% block content %}
-<h1 class="section-title">Welcome, {{ user.get_full_name|default:user.username }}!</h1>
-
-<div class="grid grid-4 mb-3">
-    <div class="stat-card blue">
-        <div class="stat-number">{{ notes_count }}</div>
-        <div class="stat-label">My Notes</div>
-    </div>
-    <div class="stat-card green">
-        <div class="stat-number">{{ forum_posts_count }}</div>
-        <div class="stat-label">Forum Posts</div>
-    </div>
-    <div class="stat-card orange">
-        <div class="stat-number">{{ routine_count }}</div>
-        <div class="stat-label">Active Routines</div>
-    </div>
-    <div class="stat-card red">
-        <div class="stat-number">{{ upcoming_exams_count }}</div>
-        <div class="stat-label">Upcoming Exams</div>
-    </div>
-</div>
-
-<div class="grid grid-2">
-    <div class="card">
-        <h2 class="card-title">Quick Actions</h2>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;">
-            <a href="{% url 'forum:post_create' %}" class="btn btn-primary" style="text-align:center;">New Post</a>
-            <a href="{% url 'notes:note_create' %}" class="btn btn-success" style="text-align:center;">New Note</a>
-            <a href="{% url 'notes:pdf_upload' %}" class="btn btn-secondary" style="text-align:center;">Upload PDF</a>
-            <a href="{% url 'planner:study_planner' %}" class="btn btn-primary" style="text-align:center;">Make Plan</a>
-            <a href="{% url 'notes:summarize' %}" class="btn btn-success" style="text-align:center;">Summarize</a>
-            <a href="{% url 'notes:quiz' %}" class="btn btn-secondary" style="text-align:center;">Make Quiz</a>
+<div class="dash-main">
+      <section class="dash-hero">
+        <div class="dash-hero-copy">
+          <p class="dash-hello">Welcome back, {{ user.first_name|default:user.username }}</p>
+          <h2>Here’s what’s happening in your StudyConnect today.</h2>
+          <p class="dash-hero-sub">{{ today|date:"l, F j, Y" }} · University of Liberal Arts Bangladesh</p>
         </div>
-    </div>
-
-    <div class="card">
-        <h2 class="card-title">My Saved Routines</h2>
-        {% if saved_routines %}
-            {% for sr in saved_routines %}
-                <div class="saved-routine-card">
-                    <div class="flex flex-between">
-                        <strong>{{ sr.name }}</strong>
-                        <span class="badge badge-primary">{{ sr.exams.count }} exams</span>
-                    </div>
-                    <p class="muted mb-1" style="font-size:0.85rem;">Created: {{ sr.created_at|date:"M d, Y" }}</p>
-                    <a href="{% url 'planner:study_planner' %}?plan_id={{ sr.id }}" class="btn btn-sm btn-primary">Plan with this</a>
-                </div>
-            {% endfor %}
-        {% else %}
-            <p class="muted">No saved routines yet. Go to <a href="{% url 'routines:routine_list' %}">Routines</a> to create one.</p>
-        {% endif %}
-    </div>
-</div>
-
-<div class="grid grid-2 mt-3">
-    <div class="card">
-        <h2 class="card-title">Navigate Modules</h2>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
-            <a href="{% url 'forum:feed' %}" style="text-decoration:none;color:inherit;">
-                <div class="tool-card" style="border-color:var(--primary);text-align:center;">
-                    <div style="font-size:2rem;margin-bottom:0.5rem;">💬</div>
-                    <strong>Forum</strong>
-                    <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">Ask & Answer</p>
-                </div>
-            </a>
-            <a href="{% url 'notes:note_list' %}" style="text-decoration:none;color:inherit;">
-                <div class="tool-card" style="border-color:var(--success);text-align:center;">
-                    <div style="font-size:2rem;margin-bottom:0.5rem;">📝</div>
-                    <strong>Notes</strong>
-                    <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">Write & Share</p>
-                </div>
-            </a>
-            <a href="{% url 'routines:routine_list' %}" style="text-decoration:none;color:inherit;">
-                <div class="tool-card" style="border-color:var(--warning);text-align:center;">
-                    <div style="font-size:2rem;margin-bottom:0.5rem;">📅</div>
-                    <strong>Routines</strong>
-                    <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">Exam Schedules</p>
-                </div>
-            </a>
-            <a href="{% url 'planner:study_planner' %}" style="text-decoration:none;color:inherit;">
-                <div class="tool-card" style="border-color:var(--danger);text-align:center;">
-                    <div style="font-size:2rem;margin-bottom:0.5rem;">📚</div>
-                    <strong>Planner</strong>
-                    <p class="muted" style="font-size:0.8rem;margin-top:0.25rem;">Study Plans</p>
-                </div>
-            </a>
+        <div class="dash-hero-actions">
+          <a href="{% url 'notes:note_create' %}" class="btn-primary"><span class="btn-shine" aria-hidden="true"></span><span class="btn-label"><i class="fa-solid fa-plus"></i> New note</span></a>
+          <a href="{% url 'forum:post_create' %}" class="btn-outline">Create post</a>
         </div>
-    </div>
+      </section>
 
-    <div class="card">
-        <h2 class="card-title">Profile Summary</h2>
-        <p class="mb-1"><strong>Username:</strong> {{ user.username }}</p>
-        <p class="mb-1"><strong>Email:</strong> {{ user.email|default:"Not set" }}</p>
-        {% if user.profile %}
-            <p class="mb-1"><strong>Display Name:</strong> {{ user.profile.display_name|default:"Not set" }}</p>
-            <p class="mb-1"><strong>Department:</strong> {{ user.profile.department|default:"Not set" }}</p>
-            <p class="mb-1"><strong>Semester:</strong> {{ user.profile.semester|default:"Not set" }}</p>
-        {% endif %}
-        <div class="mt-2">
-            <a href="{% url 'users:profile' %}" class="btn btn-secondary btn-sm">Edit Profile</a>
+      <section class="dash-grid" aria-label="Dashboard">
+        <article class="dash-feature">
+          <p class="dash-kicker">Next exam</p>
+          <h3>CSE 310 · Algorithms</h3>
+          <p class="dash-feature-meta">From your Spring 2026 Finals routine · August 22, 2026</p>
+          <div class="dash-feature-row">
+            <div>
+              <span>7 days</span>
+              <small>until exam</small>
+            </div>
+            <div>
+              <span>4</span>
+              <small>exams in this routine</small>
+            </div>
+          </div>
+          <div class="dash-feature-cta">
+            <a href="{% url 'planner:study_planner' %}" class="btn-primary"><span class="btn-label">Open planner</span></a>
+            <a href="{% url 'routines:routine_list' %}" class="dash-text-link">View routines</a>
+          </div>
+          <div class="dash-feature-orb" aria-hidden="true"></div>
+        </article>
+
+        <div class="dash-stat dash-stat-a">
+          <i class="fa-solid fa-calendar-days"></i>
+          <strong>{{ saved_routines|length }}</strong>
+          <span>Saved routines</span>
         </div>
+        <div class="dash-stat dash-stat-b">
+          <i class="fa-solid fa-clock"></i>
+          <strong>{{ upcoming_exams_count }}</strong>
+          <span>Upcoming exams</span>
+        </div>
+        <div class="dash-stat dash-stat-c">
+          <i class="fa-solid fa-note-sticky"></i>
+          <strong>{{ notes_count }}</strong>
+          <span>Notes created</span>
+        </div>
+        <div class="dash-stat dash-stat-d">
+          <i class="fa-solid fa-comments"></i>
+          <strong>{{ forum_posts_count }}</strong>
+          <span>Forum posts</span>
+        </div>
+
+        <section class="dash-panel dash-routines">
+          <header class="dash-panel-head">
+            <h3>Saved routines</h3>
+            <a href="{% url 'routines:routine_list' %}">Manage all</a>
+          </header>
+          <div class="dash-table-wrap">
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Exams</th>
+                  <th>Created</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for sr in saved_routines %}
+                <tr>
+                  <td>{{ sr.name }}</td>
+                  <td><span class="dash-pill">{{ sr.exams.count }}</span></td>
+                  <td>{{ sr.created_at|date:"M j, Y" }}</td>
+                  <td><a href="{% url 'planner:study_planner' %}">Plan</a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4">No saved routines yet.</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="dash-panel dash-activity">
+          <header class="dash-panel-head">
+            <h3>Recent activity</h3>
+            <a href="{% url 'forum:feed' %}">Forum</a>
+          </header>
+          <ol class="dash-timeline">
+            <li>
+              <span class="dash-tl-avatar">TT</span>
+              <div>
+                <p><strong>Tanim</strong> posted in Community</p>
+                <p class="dash-tl-preview">“Anyone have notes on Master Theorem for CSE 310?”</p>
+                <time datetime="2026-08-15">2 hours ago</time>
+              </div>
+              <a href="{% url 'forum:feed' %}" class="dash-tl-go">View</a>
+            </li>
+            <li>
+              <span class="dash-tl-avatar dash-tl-me">S</span>
+              <div>
+                <p>You saved <strong>Spring 2026 Finals</strong></p>
+                <time datetime="2026-08-10">Aug 10, 2026</time>
+              </div>
+              <a href="{% url 'routines:routine_list' %}" class="dash-tl-go">Open</a>
+            </li>
+            <li>
+              <span class="dash-tl-avatar dash-tl-me">S</span>
+              <div>
+                <p>You shared <strong>Master Theorem walkthrough</strong></p>
+                <time datetime="2026-08-08">CSE 310 · cheatsheet</time>
+              </div>
+              <a href="{% url 'notes:public_notes' %}" class="dash-tl-go">Open</a>
+            </li>
+          </ol>
+        </section>
+
+        <section class="dash-panel dash-resources">
+          <header class="dash-panel-head">
+            <h3>Study resources</h3>
+            <a href="{% url 'notes:public_notes' %}">View all</a>
+          </header>
+          <div class="dash-res-list">
+            <a href="{% url 'notes:public_notes' %}" class="dash-res">
+              <span class="dash-badge">Cheatsheet</span>
+              <strong>Master Theorem walkthrough</strong>
+              <span>CSE 310 · Shahriar</span>
+            </a>
+            <a href="{% url 'notes:public_notes' %}" class="dash-res">
+              <span class="dash-badge dash-badge-note">Lecture note</span>
+              <strong>CSE 310 Algorithms cheatsheet</strong>
+              <span>CSE 310 · Tanim</span>
+            </a>
+            <a href="{% url 'notes:public_notes' %}" class="dash-res">
+              <span class="dash-badge dash-badge-sum">Summary</span>
+              <strong>SQL joins quick reference</strong>
+              <span>CSE 311 · Nadia</span>
+            </a>
+          </div>
+        </section>
+
+        <section class="dash-panel dash-community">
+          <header class="dash-panel-head">
+            <h3>Community</h3>
+            <a href="{% url 'forum:feed' %}">Join discussion</a>
+          </header>
+          <a href="{% url 'forum:feed' %}" class="dash-thread">
+            <span class="dash-avatar sm">TT</span>
+            <div>
+              <strong>Master Theorem for merge sort</strong>
+              <p>Tanim · CSE 310 · 2 hours ago</p>
+            </div>
+          </a>
+          <div class="dash-actions">
+            <a href="{% url 'notes:public_notes' %}"><i class="fa-solid fa-magnifying-glass"></i> Find resources</a>
+            <a href="{% url 'forum:post_create' %}"><i class="fa-solid fa-pen"></i> Create post</a>
+            <a href="{% url 'forum:feed' %}"><i class="fa-solid fa-users"></i> Open forum</a>
+            <a href="{% url 'routines:routine_list' %}"><i class="fa-solid fa-calendar"></i> Explore routines</a>
+          </div>
+        </section>
+      </section>
     </div>
-</div>
 {% endblock %}

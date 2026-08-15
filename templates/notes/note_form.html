@@ -1,58 +1,62 @@
-{% extends 'base.html' %}
-
-{% block title %}{% if object %}Edit{% else %}Create{% endif %} Note{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}New note — ULAB StudyConnect{% endblock %}
 {% block content %}
-<a href="{% url 'notes:note_list' %}" class="btn btn-secondary btn-sm mb-2">← Back</a>
+<div class="forum-page">
+  <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
+    <a href="{% url 'users:dashboard' %}"><i class="fa-solid fa-house"></i> Dashboard</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <a href="{% url 'notes:note_list' %}">My notes</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <span class="breadcrumb-current">New note</span>
+  </nav>
 
-<div class="card">
-    <h1 class="section-title" style="font-size:1.5rem;">{% if object %}Edit Note{% else %}Create New Note{% endif %}</h1>
+  <div class="pdf-upload-hero reveal">
+    <div class="pdf-upload-hero-bg" aria-hidden="true"></div>
+    <div class="pdf-upload-hero-inner">
+      <div>
+        <span class="section-label"><i class="fa-solid fa-pen-to-square"></i> Create</span>
+        <h1 class="pdf-upload-title">Write a note<br><span class="text-gradient">your class can use</span></h1>
+        <p class="pdf-upload-desc">Markdown-friendly. Public notes show up in the resource gallery.</p>
+      </div>
+    </div>
+  </div>
 
-    <form method="post">
-        {% csrf_token %}
-
-        {% if form.errors %}
-            <div class="alert alert-error">
-                {% for field in form %}
-                    {% for error in field.errors %}
-                        <p><strong>{{ field.label }}:</strong> {{ error }}</p>
-                    {% endfor %}
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        <div class="form-group">
-            <label class="form-label">Title *</label>
-            {{ form.title }}
-        </div>
-
-        <div class="grid grid-2">
-            <div class="form-group">
-                <label class="form-label">
-                    {{ form.is_public }}
-                    <strong>Make this note public</strong>
-                </label>
-                <div class="help-text">Public notes appear in the shared gallery for all users.</div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Content (Markdown supported) *</label>
-            {{ form.body_markdown }}
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">YouTube Links (optional)</label>
-            {{ form.youtube_urls }}
-            <div class="help-text">Enter YouTube URLs or video IDs, one per line or comma-separated. Shorts and Live links supported.</div>
-        </div>
-
-        <div class="actions">
-            <button type="submit" class="btn btn-primary">
-                {% if object %}Save Changes{% else %}Create Note{% endif %}
-            </button>
-            <a href="{% url 'notes:note_list' %}" class="btn btn-secondary">Cancel</a>
-        </div>
+  <div class="pdf-upload-layout reveal">
+    <form method="post" class="pdf-upload-form">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="pdf-field">
+        <label class="label-premium" for="{{ form.title.id_for_label }}">Title</label>
+        {{ form.title }}
+        {{ form.title.errors }}
+      </div>
+      <div class="pdf-field">
+        <label class="label-premium" for="{{ form.body_markdown.id_for_label }}">Content</label>
+        {{ form.body_markdown }}
+        {{ form.body_markdown.errors }}
+      </div>
+      <div class="pdf-field">
+        <label class="label-premium" for="{{ form.youtube_urls.id_for_label }}">YouTube links</label>
+        {{ form.youtube_urls }}
+      </div>
+      <div class="pdf-field">
+        <label class="label-premium">{{ form.is_public }} Public note</label>
+      </div>
+      <div class="pdf-form-actions">
+        <a href="{% url 'notes:note_list' %}" class="btn-ghost">Cancel</a>
+        <button class="btn-primary" type="submit"><i class="fa-solid fa-floppy-disk"></i> Save note</button>
+      </div>
     </form>
+    <aside>
+      <div class="note-sidebar-card">
+        <h3>Tips</h3>
+        <ul class="pdf-tips">
+          <li>Put the course code in the title when it helps search.</li>
+          <li>Public notes can be discovered in Resources.</li>
+          <li>You can attach a PDF after saving.</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
 </div>
 {% endblock %}

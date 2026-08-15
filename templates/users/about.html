@@ -1,48 +1,315 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% block title %}About Us - ULAB StudyConnect{% endblock %}
+{% block main %}
+<main class="flex-grow w-full">
+<section class="hero-ecosystem about-hero" aria-labelledby="about-heading">
+  <div class="hero-ambient" aria-hidden="true">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+    <div class="hero-mesh"></div>
+  </div>
 
-{% block title %}About - ULAB StudyConnect{% endblock %}
+  <div class="hero-ecosystem-inner">
+    <div class="hero-ecosystem-grid">
 
-{% block content %}
-<div class="card">
-    <h1 class="section-title">About ULAB StudyConnect</h1>
-    <p class="mb-2">ULAB StudyConnect is a comprehensive academic platform designed specifically for ULAB students to enhance their learning experience and academic performance.</p>
-    <p>Our platform brings together all the essential tools students need in one place, making study management simple and effective.</p>
+      <div class="hero-ecosystem-copy">
+        <div class="hero-announce reveal">
+          <span class="hero-announce-pulse" aria-hidden="true"></span>
+          <i class="fa-solid fa-sparkles" aria-hidden="true"></i>
+          <span>Built at ULAB · For ULAB students</span>
+        </div>
+
+        <h1 id="about-heading" class="hero-headline reveal reveal-delay-1">
+          <span class="hero-line hero-line-light">The academic hub</span>
+          <span class="hero-line hero-line-bold">designed around</span>
+          <span class="hero-line hero-line-gradient">how ULAB studies.</span>
+        </h1>
+
+        <p class="hero-desc reveal reveal-delay-2">
+          StudyConnect is a student-built platform that brings exam routines, notes, planning, and community into one premium workspace — so academic life feels organized, not overwhelming.
+        </p>
+
+        <div class="hero-cta-row reveal reveal-delay-3">
+          <a href="{% url 'users:register' %}" class="btn-hero-primary">
+            <span class="btn-hero-shine" aria-hidden="true"></span>
+            <i class="fa-solid fa-rocket" aria-hidden="true"></i>
+            <span>Join StudyConnect</span>
+          </a>
+          <a href="{% url 'users:mission' %}" class="btn-hero-secondary">
+            <i class="fa-solid fa-bullseye" aria-hidden="true"></i>
+            <span>Read our mission</span>
+          </a>
+        </div>
+
+        <div class="hero-trust reveal reveal-delay-3" role="list" aria-label="Impact">
+          <div class="hero-trust-item" role="listitem">
+            <strong>1,240</strong>
+            <span>Active students</span>
+          </div>
+          <div class="hero-trust-divider" aria-hidden="true"></div>
+          <div class="hero-trust-item" role="listitem">
+            <strong>3,580</strong>
+            <span>Notes shared</span>
+          </div>
+          <div class="hero-trust-divider" aria-hidden="true"></div>
+          <div class="hero-trust-item" role="listitem">
+            <strong>890</strong>
+            <span>Forum threads</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-scene-container reveal reveal-delay-2">
+        <div class="hero-scene" id="hero-scene" aria-hidden="true">
+          <div class="hero-scene-stage" id="hero-scene-stage">
+
+            <div class="hero-hub">
+              <div class="hero-hub-glow"></div>
+              <div class="hero-hub-ring hero-hub-ring-outer"></div>
+              <div class="hero-hub-ring hero-hub-ring-inner"></div>
+              <div class="hero-hub-core">
+                <span class="hero-hub-icon"><i class="fa-solid fa-graduation-cap"></i></span>
+                <span class="hero-hub-label">About us</span>
+                <span class="hero-hub-sub">ULAB</span>
+              </div>
+            </div>
+
+            <svg class="hero-connections" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="200" y1="200" x2="80" y2="90" stroke="url(#about-conn)" stroke-width="1" stroke-dasharray="4 6" opacity="0.5"/>
+              <line x1="200" y1="200" x2="320" y2="100" stroke="url(#about-conn)" stroke-width="1" stroke-dasharray="4 6" opacity="0.5"/>
+              <line x1="200" y1="200" x2="340" y2="260" stroke="url(#about-conn)" stroke-width="1" stroke-dasharray="4 6" opacity="0.5"/>
+              <line x1="200" y1="200" x2="70" y2="280" stroke="url(#about-conn)" stroke-width="1" stroke-dasharray="4 6" opacity="0.5"/>
+              <defs>
+                <linearGradient id="about-conn" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#4f46e5"/>
+                  <stop offset="100%" stop-color="#06b6d4"/>
+                </linearGradient>
+              </defs>
+            </svg>
+
+            <a href="{% url 'users:mission' %}" class="hero-float-card hero-card-resources">
+              <span class="hero-card-icon" style="background:rgba(79,70,229,0.15);color:#4f46e5;"><i class="fa-solid fa-bullseye"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">Our Mission</span>
+                <span class="hero-card-meta">Study smarter together</span>
+              </span>
+            </a>
+
+            <a href="{% url 'users:team' %}" class="hero-float-card hero-card-forum">
+              <span class="hero-card-icon" style="background:rgba(139,92,246,0.15);color:#7c3aed;"><i class="fa-solid fa-users"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">The Team</span>
+                <span class="hero-card-meta">Built by ULAB students</span>
+              </span>
+            </a>
+
+            <a href="{% url 'notes:public_notes' %}" class="hero-float-card hero-card-planner">
+              <span class="hero-card-icon" style="background:rgba(16,185,129,0.15);color:#059669;"><i class="fa-solid fa-book-open"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">Resources</span>
+                <span class="hero-card-meta">3,580 notes shared</span>
+              </span>
+            </a>
+
+            <a href="{% url 'forum:feed' %}" class="hero-float-card hero-card-event">
+              <span class="hero-card-icon" style="background:rgba(249,115,22,0.15);color:#ea580c;"><i class="fa-solid fa-comments"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">Community</span>
+                <span class="hero-card-meta">890 active threads</span>
+              </span>
+            </a>
+
+            <a href="{% url 'users:blog' %}" class="hero-float-card hero-card-ai">
+              <span class="hero-card-icon" style="background:rgba(6,182,212,0.15);color:#0891b2;"><i class="fa-solid fa-newspaper"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">Stories</span>
+                <span class="hero-card-meta">Hackathon 2026</span>
+              </span>
+            </a>
+
+            <div class="hero-avatar-orbit">
+              <div class="hero-avatar hero-avatar-1" title="Shahriar">SR</div>
+              <div class="hero-avatar hero-avatar-2" title="Tanim">TT</div>
+              <div class="hero-avatar hero-avatar-3" title="Atique">AA</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="hero-satellite hero-satellite-online" aria-hidden="true">
+          <span class="hero-sat-dot"></span>
+          <span>Student-built</span>
+        </div>
+        <div class="hero-satellite hero-satellite-exams" aria-hidden="true">
+          <i class="fa-solid fa-trophy"></i>
+          <span>Hackathon 2026</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="page-wrap about-page">
+
+  <section class="home-section about-story reveal" aria-labelledby="story-heading">
+    <div class="home-section-header">
+      <span class="section-label"><i class="fa-solid fa-book-open-reader"></i> Our story</span>
+      <h2 id="story-heading" class="home-section-title">A campus platform,<br><span class="text-gradient">not a generic study app</span></h2>
+      <p class="home-section-desc">ULAB StudyConnect started as a hackathon idea from students who were tired of scattered routines, lost PDFs, and group chats that bury the one answer you need.</p>
+    </div>
+
+    <div class="about-story-grid">
+      <article class="about-story-card about-story-card-lg">
+        <span class="about-story-num">01</span>
+        <h3>Built on campus problems</h3>
+        <p>Exam dates, course codes, and peer notes are first-class — because that's how ULAB actually studies.</p>
+      </article>
+      <article class="about-story-card">
+        <span class="about-story-num">02</span>
+        <h3>Designed as a product</h3>
+        <p>Premium UI, clear flows, and tools that feel like a startup — not a class project dump.</p>
+      </article>
+      <article class="about-story-card">
+        <span class="about-story-num">03</span>
+        <h3>Owned by students</h3>
+        <p>Every feature exists because a ULABian needed it during a real semester crunch.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="home-section about-mv reveal" aria-labelledby="mv-heading">
+    <div class="home-section-header">
+      <span class="section-label"><i class="fa-solid fa-compass"></i> Direction</span>
+      <h2 id="mv-heading" class="home-section-title">Mission &amp; vision</h2>
+    </div>
+
+    <div class="about-mv-grid">
+      <a href="{% url 'users:mission' %}" class="about-tilt-card about-tilt-mission">
+        <div class="about-tilt-shine" aria-hidden="true"></div>
+        <span class="feature-card-icon" style="--fc:#4f46e5;--fc-bg:rgba(79,70,229,0.14);"><i class="fa-solid fa-bullseye"></i></span>
+        <h3>Our Mission</h3>
+        <p>Give ULAB students one integrated place to plan exams, take notes, and share knowledge — so studying is simpler and more collaborative.</p>
+        <span class="feature-card-link">Read the mission <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <div class="about-tilt-card about-tilt-vision">
+        <div class="about-tilt-shine" aria-hidden="true"></div>
+        <span class="feature-card-icon" style="--fc:#0891b2;--fc-bg:rgba(6,182,212,0.14);"><i class="fa-solid fa-eye"></i></span>
+        <h3>Our Vision</h3>
+        <p>Become the default academic layer of campus life — the place ULAB students open first when a semester gets serious.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section about-impact reveal" aria-labelledby="impact-heading">
+    <div class="home-section-header">
+      <span class="section-label"><i class="fa-solid fa-chart-line"></i> Impact</span>
+      <h2 id="impact-heading" class="home-section-title">Numbers that reflect<br><span class="text-gradient">a living campus</span></h2>
+    </div>
+
+    <div class="about-stat-grid">
+      <div class="about-stat-3d">
+        <div class="about-stat-face">
+          <strong>1,240</strong>
+          <span>Active users</span>
+        </div>
+      </div>
+      <div class="about-stat-3d about-stat-3d-cyan">
+        <div class="about-stat-face">
+          <strong>3,580</strong>
+          <span>Notes created</span>
+        </div>
+      </div>
+      <div class="about-stat-3d about-stat-3d-violet">
+        <div class="about-stat-face">
+          <strong>890</strong>
+          <span>Forum discussions</span>
+        </div>
+      </div>
+      <div class="about-stat-3d about-stat-3d-amber">
+        <div class="about-stat-face">
+          <strong>42</strong>
+          <span>Exam routines</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section about-values reveal" aria-labelledby="values-heading">
+    <div class="home-section-header">
+      <span class="section-label"><i class="fa-solid fa-gem"></i> Values</span>
+      <h2 id="values-heading" class="home-section-title">How we build</h2>
+    </div>
+    <div class="about-values-grid">
+      <article class="about-value-card">
+        <i class="fa-solid fa-shield-halved"></i>
+        <h3>Student-first</h3>
+        <p>If it doesn't save time before an exam, it doesn't ship.</p>
+      </article>
+      <article class="about-value-card">
+        <i class="fa-solid fa-layer-group"></i>
+        <h3>Clarity over clutter</h3>
+        <p>Premium design so tools stay calm when the semester isn't.</p>
+      </article>
+      <article class="about-value-card">
+        <i class="fa-solid fa-handshake"></i>
+        <h3>Shared knowledge</h3>
+        <p>Notes and forum answers should outlive a single WhatsApp thread.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="home-section about-team-teaser reveal">
+    <div class="about-team-banner">
+      <div>
+        <span class="section-label"><i class="fa-solid fa-users"></i> The people</span>
+        <h2 class="home-section-title">Meet the students<br>behind StudyConnect</h2>
+        <p class="home-section-desc" style="margin-bottom:24px;">Undergraduate builders from ULAB — engineering, design, and the same exam weeks as everyone else.</p>
+        <a href="{% url 'users:team' %}" class="btn-primary"><span class="btn-label">View the team <i class="fa-solid fa-arrow-right"></i></span></a>
+      </div>
+      <div class="about-team-avatars" aria-hidden="true">
+        <span class="about-team-av" style="--g:linear-gradient(135deg,#4f46e5,#1e3a8a);">SR</span>
+        <span class="about-team-av" style="--g:linear-gradient(135deg,#059669,#0f766e);">TT</span>
+        <span class="about-team-av" style="--g:linear-gradient(135deg,#7c3aed,#4c1d95);">AA</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section home-cta reveal" aria-labelledby="about-cta-heading">
+    <div class="home-cta-card">
+      <div class="home-cta-ambient" aria-hidden="true">
+        <div class="home-cta-orb home-cta-orb-1"></div>
+        <div class="home-cta-orb home-cta-orb-2"></div>
+      </div>
+      <div class="home-cta-content">
+        <span class="section-label"><i class="fa-solid fa-rocket"></i> Get started</span>
+        <h2 id="about-cta-heading" class="home-cta-title">Ready to study<br>with your campus?</h2>
+        <p class="home-cta-desc">Join ULAB students already using StudyConnect. Free for students — no credit card required.</p>
+        <div class="home-cta-actions">
+          <a href="{% url 'users:register' %}" class="btn-hero-primary">
+            <span class="btn-hero-shine" aria-hidden="true"></span>
+            <i class="fa-solid fa-rocket"></i>
+            <span>Create free account</span>
+          </a>
+          <a href="{% url 'users:login' %}" class="btn-hero-secondary">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            <span>Sign in</span>
+          </a>
+        </div>
+      </div>
+      <div class="home-cta-visual" aria-hidden="true">
+        <div class="home-cta-orbit">
+          <div class="home-cta-orbit-item" style="--i:0;"><i class="fa-solid fa-book-open"></i></div>
+          <div class="home-cta-orbit-item" style="--i:1;"><i class="fa-solid fa-calendar-days"></i></div>
+          <div class="home-cta-orbit-item" style="--i:2;"><i class="fa-solid fa-comments"></i></div>
+          <div class="home-cta-orbit-item" style="--i:3;"><i class="fa-solid fa-brain"></i></div>
+          <div class="home-cta-orbit-core"><i class="fa-solid fa-graduation-cap"></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </div>
-
-<div class="grid grid-3">
-    <div class="stat-card blue">
-        <div class="stat-number">{{ total_users|default:0 }}</div>
-        <div class="stat-label">Active Users</div>
-    </div>
-    <div class="stat-card green">
-        <div class="stat-number">{{ total_notes|default:0 }}</div>
-        <div class="stat-label">Study Notes</div>
-    </div>
-    <div class="stat-card orange">
-        <div class="stat-number">{{ total_forum_posts|default:0 }}</div>
-        <div class="stat-label">Forum Discussions</div>
-    </div>
-</div>
-
-<div class="grid grid-2 mt-3">
-    <div class="card">
-        <h2 class="card-title">Our Vision</h2>
-        <p>To create a collaborative learning environment where every ULAB student can thrive through shared knowledge, structured planning, and peer support.</p>
-    </div>
-    <div class="card">
-        <h2 class="card-title">Our Mission</h2>
-        <p>Empower students with cutting-edge tools for study planning, knowledge sharing, and academic resource management - all in one integrated platform.</p>
-    </div>
-</div>
-
-<div class="card mt-3">
-    <h2 class="card-title">Key Features</h2>
-    <ul style="padding-left:1.5rem;">
-        <li class="mb-1"><strong>Forum:</strong> Q&A and discussion platform with voting and accepted answers</li>
-        <li class="mb-1"><strong>Notes System:</strong> Markdown notes, PDF uploads, annotations, AI summarization, quiz generation</li>
-        <li class="mb-1"><strong>Routine Management:</strong> Excel-based exam routine import, personalized saved routines</li>
-        <li class="mb-1"><strong>Study Planner:</strong> AI-generated study plans based on exam dates and difficulty levels</li>
-        <li class="mb-1"><strong>User Profiles:</strong> Department and semester-based personalization</li>
-    </ul>
-</div>
+</main>
 {% endblock %}

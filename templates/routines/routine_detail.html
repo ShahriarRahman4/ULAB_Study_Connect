@@ -1,86 +1,58 @@
-{% extends 'base.html' %}
-
-{% block title %}{{ routine.title }} - Routine Detail{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Routine detail — ULAB StudyConnect{% endblock %}
 {% block content %}
-<a href="{% url 'routines:routine_list' %}" class="btn btn-secondary btn-sm mb-2">← All Routines</a>
+<div class="routine-page">
+  <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
+    <a href="{% url 'routines:routine_list' %}"><i class="fa-solid fa-calendar-days"></i> Routines</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <span class="breadcrumb-current">CSE 310 · Sec 01</span>
+  </nav>
 
-<div class="card">
-    <div class="flex flex-between flex-start">
-        <div style="flex:1;">
-            <h1 class="section-title" style="margin:0;font-size:1.5rem;">
-                {{ routine.title }}
-                {% if routine.is_active %}<span class="badge badge-success">Active</span>{% endif %}
-                <span class="badge badge-info">v{{ routine.version }}</span>
-            </h1>
-            <p class="muted" style="font-size:0.85rem;margin:0.25rem 0;">
-                Uploaded by {{ routine.uploaded_by.profile.display_name|default:routine.uploaded_by.username }}
-                · {{ routine.uploaded_at|date:"M d, Y H:i" }}
-            </p>
-            {% if routine.notes %}
-                <p class="muted mt-1" style="font-size:0.9rem;">📝 {{ routine.notes }}</p>
-            {% endif %}
-        </div>
-        <div class="actions">
-            {% if user.is_staff %}
-                <form method="post" action="{% url 'routines:routine_delete' routine.pk %}" data-confirm="Delete this routine?" style="display:inline;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                </form>
-            {% endif %}
-            <a href="{% url 'routines:saved_routine_create' routine.pk %}" class="btn btn-sm btn-primary">💾 Save this Routine</a>
-        </div>
+  <header class="routine-detail-hero reveal">
+    <div class="note-detail-badges">
+      <span class="badge badge-indigo">Summer 2026 Finals</span>
+      <span class="badge badge-amber">Room A-301</span>
+      <span class="badge badge-cyan">Sec 01</span>
     </div>
-</div>
-
-<div class="card">
-    <div class="flex flex-between flex-center mb-2">
-        <h2 class="card-title" style="margin:0;">
-            Exams ({{ exams|length }})
-            {% if selected_codes %}
-                · Filtered by: {{ selected_codes|join:", " }}
-            {% endif %}
-        </h2>
-        <form method="get" style="margin:0;">
-            <input type="text" name="course_code" class="input" placeholder="Filter course code..." value="{{ request.GET.course_code }}" style="width:220px;display:inline;">
-            <button type="submit" class="btn btn-sm btn-secondary">Filter</button>
-            <a href="{% url 'routines:routine_detail' routine.pk %}" class="btn btn-sm btn-secondary">Clear</a>
-        </form>
+    <h1 class="routine-detail-code">CSE 310</h1>
+    <p class="resources-hero-desc" style="margin-bottom:0;">Algorithms — official exam sitting</p>
+    <div class="routine-meta-grid">
+      <div class="routine-meta-item"><span>Date</span><strong>Sat, Aug 22, 2026</strong></div>
+      <div class="routine-meta-item"><span>Time</span><strong>10:00 AM – 1:00 PM</strong></div>
+      <div class="routine-meta-item"><span>Faculty</span><strong>Dr. Rahman</strong></div>
+      <div class="routine-meta-item"><span>Venue</span><strong>Building A · 301</strong></div>
     </div>
+    <div class="resources-hero-actions" style="margin-top:24px;">
+      <a href="{% url 'planner:study_planner' %}" class="btn-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> Add to planner</a>
+      <a href="{% url 'notes:public_notes' %}" class="btn-outline"><i class="fa-solid fa-book-open"></i> Course notes</a>
+      <a href="{% url 'routines:saved_routine_list' %}" class="btn-ghost"><i class="fa-regular fa-bookmark"></i> Save routine</a>
+    </div>
+  </header>
 
-    {% if exams %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Code</th>
-                    <th>Course Title</th>
-                    <th>Section</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Room</th>
-                    <th>Faculty</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for ex in exams %}
-                    <tr>
-                        <td><strong>{{ ex.course_code }}</strong></td>
-                        <td>{{ ex.course_name }}</td>
-                        <td>
-                            {% if ex.section %}
-                                <span class="badge badge-warning">{{ ex.section }}</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ ex.exam_date|date:"M d, D" }}</td>
-                        <td>{{ ex.exam_time }}</td>
-                        <td>{{ ex.room }}</td>
-                        <td>{{ ex.faculty }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p class="muted" style="text-align:center;padding:2rem;">No exams match the current filter.</p>
-    {% endif %}
+  <div class="forum-layout reveal">
+    <div>
+      <div class="note-article">
+        <h2>What to bring</h2>
+        <ul>
+          <li>Student ID and admit card</li>
+          <li>Blue/black pens — no programmable calculators unless announced</li>
+          <li>Arrive 15 minutes early; seating is posted outside A-301</li>
+        </ul>
+        <h2>Related on StudyConnect</h2>
+        <p>Use the Week 4 recursion notes and forum thread on Master Theorem if this sitting covers divide-and-conquer.</p>
+      </div>
+    </div>
+    <aside class="forum-aside">
+      <div class="note-sidebar-card">
+        <h3>Next exams</h3>
+        <a href="{% url 'routines:routine_list' %}" class="forum-related-link"><strong>CSE 311 · Database</strong><span>Aug 25 · 2:00 PM · B-210</span></a>
+        <a href="{% url 'routines:routine_list' %}" class="forum-related-link"><strong>CSE 203 · Discrete</strong><span>Aug 28 · 10:00 AM · C-105</span></a>
+      </div>
+      <div class="note-sidebar-card">
+        <h3>Admin</h3>
+        <a href="/routines/routine_confirm_delete.html" class="note-sidebar-action" style="color:#dc2626;"><i class="fa-solid fa-trash" style="color:#dc2626;"></i> Delete this listing</a>
+      </div>
+    </aside>
+  </div>
 </div>
 {% endblock %}

@@ -1,70 +1,35 @@
-{% extends 'base.html' %}
-
-{% block title %}Filtered Exams - Routines{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Filtered routine — ULAB StudyConnect{% endblock %}
 {% block content %}
-<a href="{% url 'routines:routine_list' %}" class="btn btn-secondary btn-sm mb-2">← Back</a>
+<div class="routine-page">
+  <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
+    <a href="{% url 'routines:routine_list' %}"><i class="fa-solid fa-calendar-days"></i> Routines</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <span class="breadcrumb-current">Filtered · CSE 310</span>
+  </nav>
 
-<div class="card">
-    <h1 class="section-title" style="font-size:1.25rem;">Filtered Exam Results</h1>
-    {% if selected_codes %}
-        <p class="muted" style="margin:0.25rem 0;">
-            Filters applied:
-            {% for pair in selected_pairs %}
-                <span class="badge badge-info">{{ pair.code }}{% if pair.section %} Sec {{ pair.section }}{% endif %}</span>
-            {% endfor %}
-        </p>
-    {% endif %}
-</div>
-
-{% if routines %}
-    {% for routine in routines %}
-        <div class="card">
-            <h2 class="card-title">
-                {{ routine.title }}
-                <span class="badge badge-info">v{{ routine.version }}</span>
-                {% if routine.is_active %}<span class="badge badge-success">Active</span>{% endif %}
-            </h2>
-
-            {% with routine.exams.all as all_exams %}
-            {% if all_exams %}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Course</th>
-                            <th>Sec</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Room</th>
-                            <th>Faculty</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for ex in all_exams %}
-                            <tr>
-                                <td><strong>{{ ex.course_code }}</strong></td>
-                                <td>{{ ex.course_name }}</td>
-                                <td>
-                                    {% if ex.section %}<span class="badge badge-warning">{{ ex.section }}</span>{% endif %}
-                                </td>
-                                <td>{{ ex.exam_date|date:"M d, D" }}</td>
-                                <td>{{ ex.exam_time }}</td>
-                                <td>{{ ex.room }}</td>
-                                <td>{{ ex.faculty }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            {% else %}
-                <p class="muted" style="text-align:center;padding:1rem;">No exams match your filter for this routine.</p>
-            {% endif %}
-            {% endwith %}
+  <div class="resources-hero reveal">
+    <div class="resources-hero-bg" aria-hidden="true"></div>
+    <div class="resources-hero-inner">
+      <div>
+        <span class="section-label"><i class="fa-solid fa-filter"></i> Filtered view</span>
+        <h1 class="resources-hero-title">CSE 310 · Section 01</h1>
+        <p class="resources-hero-desc">Your matching exams from Summer 2026 Finals. Save this view or send it straight to the planner.</p>
+        <div class="resources-hero-actions">
+          <a href="{% url 'routines:routine_list' %}" class="btn-outline">Clear filters</a>
+          <a href="{% url 'planner:study_planner' %}" class="btn-primary"><i class="fa-solid fa-wand-magic-sparkles"></i> Create study plan</a>
         </div>
-    {% endfor %}
-{% else %}
-    <div class="card" style="text-align:center;padding:3rem;">
-        <p class="muted">No routines found matching your filters.</p>
+      </div>
     </div>
-{% endif %}
+  </div>
+
+  <a href="{% url 'routines:routine_list' %}" class="exam-card reveal" style="display:flex;max-width:720px;">
+    <div class="exam-card-top"><div><div class="exam-card-course">CSE 310</div><div class="exam-card-name">Algorithms</div></div><span class="badge badge-indigo">Sec 01</span></div>
+    <div class="exam-card-meta">
+      <span><i class="fa-regular fa-calendar"></i> Sat, Aug 22, 2026 · 10:00 AM</span>
+      <span class="badge badge-amber">A-301</span>
+      <span>Dr. Rahman</span>
+    </div>
+  </a>
+</div>
 {% endblock %}

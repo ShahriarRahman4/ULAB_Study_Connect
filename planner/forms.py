@@ -6,17 +6,17 @@ from routines.models import SavedRoutine
 class StudyPlanForm(forms.Form):
     routine = forms.ChoiceField(
         choices=[],
-        widget=forms.Select(attrs={"class": "input"}),
+        widget=forms.Select(attrs={"class": "select-premium"}),
     )
     hours_per_day = forms.FloatField(
         min_value=0.5,
         max_value=16,
         initial=4,
-        widget=forms.NumberInput(attrs={"class": "input", "step": "0.5"}),
+        widget=forms.NumberInput(attrs={"class": "input-premium no-icon", "step": "0.5"}),
     )
     start_date = forms.DateField(
         required=False,
-        widget=forms.DateInput(attrs={"class": "input", "type": "date"}),
+        widget=forms.DateInput(attrs={"class": "input-premium no-icon", "type": "date"}),
     )
 
     def __init__(self, *args, **kwargs):

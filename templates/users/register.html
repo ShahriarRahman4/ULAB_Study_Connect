@@ -1,61 +1,83 @@
-{% extends 'base.html' %}
-
-{% block title %}Register - ULAB StudyConnect{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Register — ULAB StudyConnect{% endblock %}
 {% block content %}
-<div class="auth-container">
-    <div class="auth-card">
-        <h2>Create Account</h2>
-        <p class="muted mb-3" style="text-align:center;">Join ULAB StudyConnect today</p>
+<div class="auth-page reveal">
+  <div class="auth-shell-premium">
 
-        <form method="post">
-            {% csrf_token %}
+    <aside class="auth-visual-premium">
+      <div class="auth-visual-orbs" aria-hidden="true">
+        <span class="auth-orb auth-orb-1"></span>
+        <span class="auth-orb auth-orb-2"></span>
+      </div>
+      <div class="auth-visual-content">
+        <span class="section-label auth-label-dark"><i class="fa-solid fa-sparkles"></i> Join StudyConnect</span>
+        <h2 class="auth-visual-title">Create your student account</h2>
+        <p class="auth-visual-desc">One registration unlocks exam routines, study planning, notes, PDF tools, and community discussion.</p>
+        <ul class="auth-perk-list">
+          <li><i class="fa-solid fa-at"></i> Pick a username you'll use every sign-in</li>
+          <li><i class="fa-solid fa-shield-halved"></i> Strong password; profile details after login</li>
+          <li><i class="fa-solid fa-rocket"></i> Free for ULAB students</li>
+        </ul>
+      </div>
+      <div class="auth-float-stack" aria-hidden="true">
+        <div class="auth-float-card">
+          <span class="hero-card-icon" style="background:rgba(79,70,229,0.25);color:#a5b4fc;"><i class="fa-solid fa-calendar-days"></i></span>
+          <span><strong>Exam routines</strong><small>Official schedules</small></span>
+        </div>
+        <div class="auth-float-card auth-float-card-delay">
+          <span class="hero-card-icon" style="background:rgba(6,182,212,0.2);color:#67e8f9;"><i class="fa-solid fa-brain"></i></span>
+          <span><strong>AI study tools</strong><small>Summarize &amp; quiz</small></span>
+        </div>
+      </div>
+    </aside>
 
-            {% if form.errors %}
-                <div class="alert alert-error">
-                    {% for field in form %}
-                        {% for error in field.errors %}
-                            <p>{{ error }}</p>
-                        {% endfor %}
-                    {% endfor %}
-                    {% for error in form.non_field_errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
+    <div class="auth-form-premium">
+      <div class="auth-form-inner">
+        <h1 class="auth-form-title">Register</h1>
+        <p class="auth-form-sub">Set up your credentials — it only takes a minute.</p>
 
-            <div class="form-group">
-                <label class="form-label" for="id_username">Username</label>
-                <input type="text" name="username" id="id_username" class="input" required maxlength="150" autocomplete="username">
-                {% if form.username.help_text %}
-                    <div class="help-text">{{ form.username.help_text|safe }}</div>
-                {% endif %}
+        <form method="post" class="auth-form">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+          <div>
+            <label for="id_username" class="label-premium">Username</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-at"></i>
+              {{ form.username }}
             </div>
-
-            <div class="form-group">
-                <label class="form-label" for="id_password1">Password</label>
-                <input type="password" name="password1" id="id_password1" class="input" required autocomplete="new-password">
-                {% if form.password1.help_text %}
-                    <div class="help-text">{{ form.password1.help_text|safe }}</div>
-                {% endif %}
+            {{ form.username.errors }}
+          </div>
+          <div>
+            <label for="id_password1" class="label-premium">Password</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-lock"></i>
+              {{ form.password1 }}
+              <button type="button" class="auth-eye" data-toggle-password="id_password1" aria-label="Show password"><i class="fa-regular fa-eye"></i></button>
             </div>
-
-            <div class="form-group">
-                <label class="form-label" for="id_password2">Confirm Password</label>
-                <input type="password" name="password2" id="id_password2" class="input" required autocomplete="new-password">
-                {% if form.password2.help_text %}
-                    <div class="help-text">{{ form.password2.help_text|safe }}</div>
-                {% endif %}
+            {{ form.password1.errors }}
+          </div>
+          <div>
+            <label for="id_password2" class="label-premium">Confirm password</label>
+            <div class="input-wrap">
+              <i class="fa-solid fa-lock"></i>
+              {{ form.password2 }}
+              <button type="button" class="auth-eye" data-toggle-password="id_password2" aria-label="Show password"><i class="fa-regular fa-eye"></i></button>
             </div>
-
-            <button type="submit" class="btn btn-primary" style="width:100%;">Create Account</button>
+            {{ form.password2.errors }}
+          </div>
+          <button type="submit" class="btn-hero-primary auth-submit">
+            <span class="btn-hero-shine" aria-hidden="true"></span>
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Create account</span>
+          </button>
         </form>
 
-        <div class="divider"></div>
-
-        <p style="text-align:center;" class="muted">
-            Already have an account? <a href="{% url 'users:login' %}">Login here</a>
-        </p>
+        <p class="auth-legal">By registering you agree to use this platform responsibly for academic collaboration.</p>
+        <p class="auth-switch">Already registered? <a href="{% url 'users:login' %}">Sign in instead</a></p>
+        <a href="{% url 'users:home' %}" class="auth-back"><i class="fa-solid fa-arrow-left"></i> Back to home</a>
+      </div>
     </div>
+
+  </div>
 </div>
 {% endblock %}

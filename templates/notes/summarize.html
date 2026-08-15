@@ -1,88 +1,37 @@
-{% extends 'base.html' %}
-
-{% block title %}AI Summarizer - Notes{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Summarize — ULAB StudyConnect{% endblock %}
 {% block content %}
-<a href="{% url 'notes:note_list' %}" class="btn btn-secondary btn-sm mb-2">← Back to Notes</a>
+<div class="notes-hub-page">
+  <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
+    <a href="{% url 'notes:note_list' %}">My notes</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <a href="{% url 'notes:public_notes' %}">Week 4 — Recursion</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <span class="breadcrumb-current">AI Summary</span>
+  </nav>
 
-<h1 class="section-title">Text Summarizer</h1>
-<p class="muted mb-3">Paste text or select from your notes/PDFs to generate an AI-powered summary with key points and exam tips.</p>
-
-<div class="grid grid-2">
-    <div class="card">
-        <h2 class="card-title">Input Source</h2>
-        <form method="post">
-            {% csrf_token %}
-
-            <div class="form-group">
-                <label class="form-label">Select from My Notes (optional)</label>
-                <select name="note_id" class="select">
-                    <option value="">-- Paste text instead --</option>
-                    {% for n in notes %}
-                        <option value="{{ n.id }}">{{ n.title }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Or select PDF (optional)</label>
-                <select name="pdf_id" class="select">
-                    <option value="">-- None --</option>
-                    {% for p in pdfs %}
-                        <option value="{{ p.id }}">{{ p.title }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Or Paste Text Directly</label>
-                {{ form.text }}
-            </div>
-
-            <button type="submit" class="btn btn-primary">📋 Generate Summary</button>
-        </form>
-
-        {% if source_preview %}
-            <div class="mt-2">
-                <p class="muted" style="font-size:0.85rem;">Source preview: {{ source_preview }}...</p>
-            </div>
-        {% endif %}
+  <div class="pdf-upload-hero reveal">
+    <div class="pdf-upload-hero-bg" aria-hidden="true"></div>
+    <div class="pdf-upload-hero-inner">
+      <div>
+        <span class="section-label"><i class="fa-solid fa-wand-magic-sparkles"></i> AI</span>
+        <h1 class="pdf-upload-title">Summary of<br><span class="text-gradient">Week 4 — Recursion</span></h1>
+        <p class="pdf-upload-desc">Key takeaways generated from your note — demo content for the hackathon preview.</p>
+      </div>
     </div>
+  </div>
 
-    <div class="card">
-        <h2 class="card-title">Summary Result</h2>
-        {% if result %}
-            <div style="padding:1rem;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;margin-bottom:1rem;">
-                <p style="margin:0;"><strong>Summary:</strong> {{ result.summary_paragraph }}</p>
-            </div>
-
-            <h3 style="margin-bottom:0.5rem;font-size:1rem;">📌 Key Summary Points</h3>
-            <ol style="padding-left:1.5rem;margin-bottom:1rem;">
-                {% for bullet in result.summary_bullets %}
-                    <li style="margin-bottom:0.35rem;">{{ bullet }}</li>
-                {% endfor %}
-            </ol>
-
-            {% if result.key_points %}
-                <h3 style="margin-bottom:0.5rem;font-size:1rem;">🔑 Key Points & Definitions</h3>
-                <ul style="padding-left:1.5rem;margin-bottom:1rem;">
-                    {% for kp in result.key_points %}
-                        <li style="margin-bottom:0.35rem;">{{ kp }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
-
-            <h3 style="margin-bottom:0.5rem;font-size:1rem;">🎯 Exam Tips</h3>
-            <ul style="padding-left:1.5rem;margin:0;">
-                {% for tip in result.exam_tips %}
-                    <li style="margin-bottom:0.35rem;">{{ tip }}</li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <p class="muted" style="padding:2rem;text-align:center;">
-                Enter text, select a note, or choose a PDF to generate a summary.
-            </p>
-        {% endif %}
+  <div class="ai-summary-card reveal">
+    <div class="ai-summary-badge"><i class="fa-solid fa-brain"></i> Generated summary</div>
+    <ul class="ai-summary-list">
+      <li>Recursion needs a <strong>base case</strong> and a strictly smaller recursive case.</li>
+      <li>Factorial, Fibonacci, binary search, and tree walks all follow this pattern.</li>
+      <li>Watch stack depth — naive Fibonacci is exponential without memoization.</li>
+    </ul>
+    <div class="resources-hero-actions" style="margin-top:24px;">
+      <a href="{% url 'notes:public_notes' %}" class="btn-outline">Back to note</a>
+      <a href="{% url 'notes:quiz' %}" class="btn-primary"><i class="fa-solid fa-circle-question"></i> Practice quiz</a>
     </div>
+  </div>
 </div>
 {% endblock %}

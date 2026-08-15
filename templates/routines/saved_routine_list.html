@@ -1,79 +1,52 @@
-{% extends 'base.html' %}
-
-{% block title %}My Saved Routines{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Saved Routines — ULAB StudyConnect{% endblock %}
 {% block content %}
-<div class="flex flex-between flex-center mb-2">
-    <h1 class="section-title" style="margin:0;">💾 My Saved Routines</h1>
-    <a href="{% url 'routines:routine_list' %}" class="btn btn-secondary">All Routines</a>
-</div>
+<div class="routine-page">
+  <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
+    <a href="{% url 'users:dashboard' %}"><i class="fa-solid fa-house"></i> Dashboard</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <span class="breadcrumb-current">Saved routines</span>
+  </nav>
 
-{% if saved_routines %}
-    {% for sr in saved_routines %}
-        <div class="card">
-            <div class="flex flex-between flex-start">
-                <div style="flex:1;">
-                    <h2 class="card-title" style="margin:0;">
-                        <form method="post" action="{% url 'routines:routine_list' %}" style="display:inline;">
-                            {% csrf_token %}
-                            <input type="text" value="{{ sr.name }}" class="input" style="width:auto;display:inline;font-weight:700;border:none;background:none;padding:0;font-size:1.25rem;" disabled>
-                        </form>
-                    </h2>
-                    <p class="muted" style="font-size:0.85rem;margin:0.25rem 0;">
-                        {{ sr.exams.count }} exam{{ sr.exams.count|pluralize }}
-                        {% if sr.routine_file %}· From: {{ sr.routine_file.title }} v{{ sr.routine_file.version }}{% endif %}
-                    </p>
-                </div>
-                <div class="actions">
-                    <a href="{% url 'routines:saved_routine_create' sr.routine_file.pk %}" class="btn btn-sm btn-primary">📝 Edit Selection</a>
-                    <form method="post" action="{% url 'routines:saved_routine_delete' sr.pk %}" data-confirm="Delete this saved routine?" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                    </form>
-                </div>
-            </div>
-
-            {% if sr.exams.all %}
-                <div style="margin-top:1rem;">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Code</th>
-                                <th>Course</th>
-                                <th>Section</th>
-                                <th>Date</th>
-                                <th>Time</th>
-                                <th>Room</th>
-                                <th>Faculty</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for ex in sr.exams.all %}
-                                <tr>
-                                    <td><strong>{{ ex.course_code }}</strong></td>
-                                    <td>{{ ex.course_name }}</td>
-                                    <td>
-                                        {% if ex.section %}<span class="badge badge-warning">{{ ex.section }}</span>{% endif %}
-                                    </td>
-                                    <td>{{ ex.exam_date|date:"M d, D" }}</td>
-                                    <td>{{ ex.exam_time }}</td>
-                                    <td>{{ ex.room }}</td>
-                                    <td>{{ ex.faculty }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <p class="muted mt-2">No exams in this saved routine.</p>
-            {% endif %}
+  <div class="resources-hero reveal">
+    <div class="resources-hero-bg" aria-hidden="true"></div>
+    <div class="resources-hero-inner">
+      <div>
+        <span class="section-label"><i class="fa-solid fa-bookmark"></i> Saved</span>
+        <h1 class="resources-hero-title">Your exam<br><span class="text-gradient">routines</span></h1>
+        <p class="resources-hero-desc">Personalized schedules ready for study planning. Open a routine or send it to the planner.</p>
+        <div class="resources-hero-actions">
+          <a href="{% url 'routines:routine_list' %}" class="btn-outline">Browse official list</a>
         </div>
-    {% endfor %}
-{% else %}
-    <div class="card" style="text-align:center;padding:3rem;">
-        <p class="muted mb-2">No saved routines yet.</p>
-        <p class="muted" style="font-size:0.9rem;">Save your personal set of selected exams from any routine, then use the <a href="{% url 'planner:study_planner' %}">Study Planner</a> to auto-generate a study schedule.</p>
-        <a href="{% url 'routines:routine_list' %}" class="btn btn-primary mt-2">Browse Routines</a>
+      </div>
     </div>
-{% endif %}
+  </div>
+
+  <div class="blog-grid reveal">
+    <article class="blog-card" style="padding:0;">
+      <div class="blog-card-body">
+        <div class="blog-card-meta"><span class="badge badge-indigo">Finals</span><span class="blog-card-date">Saved Aug 10, 2026</span></div>
+        <h3>Spring 2026 Finals</h3>
+        <p>4 exams · CSE 310, 311, 203, ENG 101</p>
+        <div class="resources-hero-actions" style="margin-top:16px;">
+          <a href="{% url 'routines:routine_list' %}" class="btn-outline" style="padding:8px 14px;font-size:0.8rem;">Open</a>
+          <a href="{% url 'planner:study_planner' %}" class="btn-primary" style="padding:8px 14px;font-size:0.8rem;">Create plan</a>
+          <a href="/routines/saved_routine_confirm_delete.html" class="btn-ghost" style="padding:8px 14px;font-size:0.8rem;color:#dc2626;">Delete</a>
+        </div>
+      </div>
+    </article>
+    <article class="blog-card" style="padding:0;">
+      <div class="blog-card-body">
+        <div class="blog-card-meta"><span class="badge badge-cyan">Midterms</span><span class="blog-card-date">Saved Aug 4, 2026</span></div>
+        <h3>CSE Midterms</h3>
+        <p>3 exams · focused CSE track</p>
+        <div class="resources-hero-actions" style="margin-top:16px;">
+          <a href="{% url 'routines:routine_filter' %}" class="btn-outline" style="padding:8px 14px;font-size:0.8rem;">Open</a>
+          <a href="{% url 'planner:study_planner' %}" class="btn-primary" style="padding:8px 14px;font-size:0.8rem;">Create plan</a>
+          <a href="/routines/saved_routine_confirm_delete.html" class="btn-ghost" style="padding:8px 14px;font-size:0.8rem;color:#dc2626;">Delete</a>
+        </div>
+      </div>
+    </article>
+  </div>
+</div>
 {% endblock %}

@@ -1,63 +1,57 @@
-{% extends 'base.html' %}
-
-{% block title %}Upload Routine - Staff{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Upload Routine — ULAB StudyConnect{% endblock %}
 {% block content %}
-<a href="{% url 'routines:routine_list' %}" class="btn btn-secondary btn-sm mb-2">← Back</a>
+<div class="forum-page">
+  <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
+    <a href="{% url 'routines:routine_list' %}"><i class="fa-solid fa-calendar-days"></i> Routines</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <span class="breadcrumb-current">Upload</span>
+  </nav>
 
-<div class="card" style="max-width:700px;margin:0 auto;">
-    <h1 class="section-title" style="font-size:1.5rem;">Upload Routine Excel</h1>
-    {% if info %}
-        <div class="alert alert-info">
-            <ul style="margin:0;padding-left:1.25rem;">
-                {% for line in info %}
-                    <li>{{ line }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-    {% endif %}
+  <div class="pdf-upload-hero reveal">
+    <div class="pdf-upload-hero-bg" aria-hidden="true"></div>
+    <div class="pdf-upload-hero-inner">
+      <div>
+        <span class="section-label"><i class="fa-solid fa-upload"></i> Import</span>
+        <h1 class="pdf-upload-title">Upload exam<br><span class="text-gradient">routine</span></h1>
+        <p class="pdf-upload-desc">Import an official spreadsheet so students can filter by course and section.</p>
+      </div>
+    </div>
+  </div>
 
-    {% if form.errors %}
-        <div class="alert alert-error">
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <p><strong>{{ field.label }}:</strong> {{ error }}</p>
-                {% endfor %}
-            {% endfor %}
-            {% for error in form.non_field_errors %}
-                <p>{{ error }}</p>
-            {% endfor %}
-        </div>
-    {% endif %}
-
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-
-        <div class="form-group">
-            <label class="form-label">Routine Title *</label>
-            {{ form.title }}
-            <div class="help-text">e.g. "Fall 2024 Final Exam Routine"</div>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Excel File (.xlsx) *</label>
-            {{ form.file }}
-            <div class="help-text">
-                Expected format: Day/Date as rows, Time as columns, cells like<br>
-                <code>Course Code-Course Name-Section / Room / Faculty</code><br>
-                Example: <code>CSE3201-Computer Networks-1 / Room 101 / Dr. Ahmed</code>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label">Notes (optional)</label>
-            {{ form.notes }}
-        </div>
-
-        <div class="actions">
-            <button type="submit" class="btn btn-primary">Upload & Import</button>
-            <a href="{% url 'routines:routine_list' %}" class="btn btn-secondary">Cancel</a>
-        </div>
+  <div class="pdf-upload-layout reveal">
+    <form method="post" enctype="multipart/form-data" class="pdf-upload-form">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div class="pdf-field">
+        <label class="label-premium" for="{{ form.title.id_for_label }}">Title</label>
+        {{ form.title }}
+        {{ form.title.errors }}
+      </div>
+      <div class="pdf-field">
+        <label class="label-premium" for="{{ form.file.id_for_label }}">Spreadsheet</label>
+        {{ form.file }}
+        {{ form.file.errors }}
+      </div>
+      <div class="pdf-field">
+        <label class="label-premium" for="{{ form.notes.id_for_label }}">Notes</label>
+        {{ form.notes }}
+      </div>
+      <div class="pdf-form-actions">
+        <a href="{% url 'routines:routine_list' %}" class="btn-ghost">Cancel</a>
+        <button class="btn-primary" type="submit"><i class="fa-solid fa-cloud-arrow-up"></i> Upload routine</button>
+      </div>
     </form>
+    <aside>
+      <div class="note-sidebar-card">
+        <h3>Expected columns</h3>
+        <ul class="pdf-tips">
+          <li>Course code, section, date, time</li>
+          <li>Room and faculty name</li>
+          <li>One row per exam sitting</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
 </div>
 {% endblock %}

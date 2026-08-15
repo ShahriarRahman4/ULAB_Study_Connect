@@ -1,146 +1,111 @@
-{% extends 'base.html' %}
-
-{% block title %}Study Planner{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Smart Study Planner — ULAB StudyConnect{% endblock %}
 {% block content %}
-<div class="flex flex-between flex-center mb-2">
-    <h1 class="section-title" style="margin:0;">Study Planner</h1>
-    <a href="{% url 'planner:study_plan_list' %}" class="btn btn-secondary">Saved Plans</a>
-</div>
+<div class="planner-page">
+  <nav class="breadcrumb breadcrumb-premium reveal" aria-label="Breadcrumb">
+    <a href="{% url 'users:dashboard' %}"><i class="fa-solid fa-house"></i> Dashboard</a>
+    <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+    <span class="breadcrumb-current">Study Planner</span>
+  </nav>
 
-<div class="card">
-    <h2 class="card-title">Generate a Study Plan</h2>
-    <form method="post">
-        {% csrf_token %}
-        <div class="grid grid-3">
-            <div class="form-group">
-                <label class="form-label">Saved Routine *</label>
-                {{ form.routine }}
-                {{ form.routine.errors }}
-                <div class="help-text">First save a routine in the <a href="{% url 'routines:routine_list' %}">Routines</a> page.</div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">Hours per Day *</label>
-                {{ form.hours_per_day }}
-                {{ form.hours_per_day.errors }}
-            </div>
-            <div class="form-group">
-                <label class="form-label">Start Date</label>
-                {{ form.start_date }}
-            </div>
+  <div class="resources-hero reveal">
+    <div class="resources-hero-bg" aria-hidden="true"></div>
+    <div class="resources-hero-inner">
+      <div>
+        <span class="section-label"><i class="fa-solid fa-brain"></i> Algorithm-driven</span>
+        <h1 class="resources-hero-title">Smart study<br><span class="text-gradient">planner</span></h1>
+        <p class="resources-hero-desc">Build a realistic schedule from your saved exam routine — hours per day, course load, and exam dates in one view.</p>
+        <div class="resources-hero-actions">
+          <a href="{% url 'planner:study_plan_list' %}" class="btn-outline"><i class="fa-solid fa-list-check"></i> Saved plans</a>
+          <a href="{% url 'routines:routine_list' %}" class="btn-ghost"><i class="fa-solid fa-calendar-days"></i> Exam routines</a>
         </div>
-
-        <h3 style="margin:1rem 0 0.5rem;font-size:1rem;">Filter Courses (optional)</h3>
-        <p class="muted mb-2" style="font-size:0.85rem;">Only include specific courses in your plan. Leave empty for all exams in the routine.</p>
-        <div id="course-filters">
-            <div class="course-filter-row">
-                <input type="text" name="course_code[]" class="input" placeholder="Course Code (e.g. CSE3201)">
-                <input type="text" name="section[]" class="input" placeholder="Section">
-                <select name="strength[]" class="select">
-                    <option value="1">Very Easy</option>
-                    <option value="2">Easy</option>
-                    <option value="3" selected>Medium</option>
-                    <option value="4">Hard</option>
-                    <option value="5">Very Hard</option>
-                </select>
-                <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">×</button>
-            </div>
-        </div>
-        <button type="button" class="btn btn-sm btn-secondary mt-1" onclick="addCourseFilterRow('course-filters')">+ Add Another Course</button>
-
-        <div class="mt-2">
-            <button type="submit" class="btn btn-primary">📚 Build Study Plan</button>
-        </div>
-    </form>
-</div>
-
-{% if plan_days %}
-    <div class="card">
-        <div class="flex flex-between flex-center mb-2">
-            <h2 class="card-title" style="margin:0;">Your Study Plan</h2>
-            <div style="display:flex;gap:0.5rem;">
-                {% if logs %}
-                    <span class="badge badge-info">{{ logs|last }}</span>
-                {% endif %}
-                {% if nearest_exam_days is not None %}
-                    <span class="badge badge-warning">Nearest exam: {{ nearest_exam_days }} day{{ nearest_exam_days|pluralize }}</span>
-                {% endif %}
-            </div>
-        </div>
-
-        {% if personal_exams %}
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0.5rem;margin-bottom:1rem;">
-                {% for ex in personal_exams %}
-                    <div style="padding:0.5rem 0.75rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;font-size:0.85rem;">
-                        <strong>{{ ex.course_code }}</strong>
-                        <br><span class="muted">{{ ex.exam_date|date:"M d" }} · {{ ex.exam_time }}</span>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        <form method="post" action="{% url 'planner:study_plan_save' %}">
-            {% csrf_token %}
-            <input type="hidden" name="routine_id" value="{{ routine_id|default:'' }}">
-            {% if plan_id %}<input type="hidden" name="plan_id" value="{{ plan_id }}">{% endif %}
-
-            <div class="form-group">
-                <label class="form-label">Plan Name</label>
-                <input type="text" name="name" class="input" value="{{ plan_name|default:'My Study Plan' }}" required>
-            </div>
-
-            <div id="plan-data"></div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Course</th>
-                        <th>Hours</th>
-                        <th>Done</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for date, courses in plan_days %}
-                        {% for code, hours in courses %}
-                            <tr>
-                                <td>{{ date|date:"M d, D" }}</td>
-                                <td>
-                                    <strong>{{ code }}</strong>
-                                    <input type="hidden" name="plan_date[]" value="{{ date|date:'Y-m-d' }}">
-                                    <input type="hidden" name="plan_course_code[]" value="{{ code }}">
-                                    <input type="hidden" name="plan_hours[]" value="{{ hours }}">
-                                    <input type="hidden" name="plan_completed[]" value="false">
-                                </td>
-                                <td>{{ hours }}h</td>
-                                <td>⬜</td>
-                            </tr>
-                            {% with cp=course_plans|first %}
-                            {% endwith %}
-                        {% endfor %}
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            <div style="display:none;">
-                {% if selected_pairs %}
-                    {% for pair in selected_pairs %}
-                        <input type="hidden" name="course_code[]" value="{{ pair.code }}">
-                        <input type="hidden" name="course_strength[]" value="{{ pair.strength }}">
-                    {% endfor %}
-                {% endif %}
-                {% if personal_exams %}
-                    {% for ex in personal_exams %}
-                        <input type="hidden" name="course_code[]" value="{{ ex.course_code }}">
-                        <input type="hidden" name="course_strength[]" value="{{ ex.user_strength|default:3 }}">
-                    {% endfor %}
-                {% endif %}
-            </div>
-
-            <div class="mt-2">
-                <button type="submit" class="btn btn-success">💾 Save This Plan</button>
-            </div>
-        </form>
+      </div>
+      <div class="resources-hero-stats">
+        <div class="resources-stat-card"><span class="resources-stat-value">4h</span><span class="resources-stat-label">Default / day</span></div>
+        <div class="resources-stat-card"><span class="resources-stat-value">12</span><span class="resources-stat-label">Day sprint</span></div>
+        <div class="resources-stat-card resources-stat-card-accent"><span class="resources-stat-value">4</span><span class="resources-stat-label">Courses</span></div>
+      </div>
     </div>
-{% endif %}
+  </div>
+
+  <div class="planner-layout reveal">
+    <aside class="planner-sidebar">
+      <div class="routine-filter-card">
+        <h3><i class="fa-solid fa-sliders" style="color:var(--primary);"></i> Plan parameters</h3>
+        <form id="plan-form" method="post" class="planner-form">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+          <div>
+            <label class="label-premium" for="{{ form.routine.id_for_label }}">Saved routine</label>
+            {{ form.routine }}
+            {{ form.routine.errors }}
+          </div>
+          <div>
+            <label class="label-premium" for="{{ form.hours_per_day.id_for_label }}">Hours per day</label>
+            {{ form.hours_per_day }}
+          </div>
+          <div>
+            <label class="label-premium" for="{{ form.start_date.id_for_label }}">Start date</label>
+            {{ form.start_date }}
+          </div>
+          <button class="btn-hero-primary auth-submit" type="submit">
+            <span class="btn-hero-shine" aria-hidden="true"></span>
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Generate plan</span>
+          </button>
+        </form>
+        <a href="{% url 'planner:study_plan_list' %}" class="auth-back">View saved plans</a>
+      </div>
+      <div class="note-sidebar-card" style="margin-top:16px;">
+        <h3>How it works</h3>
+        <ul class="pdf-tips">
+          <li>Heavier courses get more blocks closer to the exam.</li>
+          <li>Daily cap never exceeds the hours you set.</li>
+          <li>Demo generate stays on this page — no backend.</li>
+        </ul>
+      </div>
+    </aside>
+
+    <div>
+      <div id="plan-empty" class="planner-empty">
+        <div class="resources-empty-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+        <h3>Ready to plan</h3>
+        <p>Choose a routine and daily hours, then generate a custom study schedule.</p>
+      </div>
+
+      <div id="plan-result" class="planner-result hidden">
+        <div class="routine-table-head">
+          <h2>Personalized schedule</h2>
+          <a href="{% url 'planner:study_plan_list' %}" class="btn-outline" style="padding:8px 14px;font-size:0.8rem;">Save plan</a>
+        </div>
+        <ol class="planner-timeline">
+          <li class="planner-day">
+            <div class="planner-day-dot"></div>
+            <div class="planner-day-head">Monday, Aug 18 <span class="badge badge-amber">Today</span></div>
+            <div class="planner-block"><span>CSE 310 · Algorithms</span><span class="badge badge-indigo">2 hrs</span></div>
+            <div class="planner-block"><span>CSE 311 · Database</span><span class="badge badge-indigo">2 hrs</span></div>
+          </li>
+          <li class="planner-day">
+            <div class="planner-day-dot"></div>
+            <div class="planner-day-head">Tuesday, Aug 19</div>
+            <div class="planner-block"><span>CSE 311 · Normalization</span><span class="badge badge-indigo">2 hrs</span></div>
+            <div class="planner-block"><span>CSE 203 · Graphs</span><span class="badge badge-indigo">2 hrs</span></div>
+          </li>
+          <li class="planner-day">
+            <div class="planner-day-dot"></div>
+            <div class="planner-day-head">Wednesday, Aug 20</div>
+            <div class="planner-block"><span>CSE 310 · Master Theorem</span><span class="badge badge-indigo">3 hrs</span></div>
+            <div class="planner-block"><span>ENG 101 · Outline</span><span class="badge badge-cyan">1 hr</span></div>
+          </li>
+          <li class="planner-day">
+            <div class="planner-day-dot"></div>
+            <div class="planner-day-head">Thursday, Aug 21</div>
+            <div class="planner-block"><span>CSE 310 · Past papers</span><span class="badge badge-amber">4 hrs</span></div>
+          </li>
+        </ol>
+        <p class="planner-footnote">Based on Spring 2026 Finals · 4 hours/day. Adjust parameters and generate again anytime.</p>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

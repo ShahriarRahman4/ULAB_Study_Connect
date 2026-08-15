@@ -20,14 +20,14 @@ class ScholarAuthenticationForm(AuthenticationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["username"].widget.attrs.update({
-            "class": "input",
+            "class": "input-premium",
             "autocomplete": "username",
-            "placeholder": "Username",
+            "placeholder": "Your username",
         })
         self.fields["password"].widget.attrs.update({
-            "class": "input",
+            "class": "input-premium",
             "autocomplete": "current-password",
-            "placeholder": "Password",
+            "placeholder": "Enter password",
         })
 
 
@@ -52,6 +52,10 @@ class BlogView(TemplateView):
     template_name = "users/blog.html"
 
 
+class TeamView(TemplateView):
+    template_name = "users/team.html"
+
+
 class HomeView(TemplateView):
     template_name = "users/home.html"
 
@@ -73,6 +77,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         ctx["saved_routines"] = SavedRoutine.objects.filter(user=user).prefetch_related("exams")[:5]
 
         ctx["notes_count"] = Note.objects.filter(owner=user).count()
+        ctx["today"] = today
         ctx["forum_posts_count"] = Post.objects.count()
         ctx["upcoming_exams_count"] = (
             Exam.objects.filter(saved_routines__user=user, exam_date__gte=today)

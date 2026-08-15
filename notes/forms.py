@@ -16,11 +16,11 @@ class NoteForm(forms.ModelForm):
         )
         widgets = {
             "title": forms.TextInput(attrs={
-                "class": "input",
+                "class": "input-premium no-icon",
                 "placeholder": "e.g. My Semester Goals"
             }),
             "body_markdown": forms.Textarea(attrs={
-                "class": "textarea",
+                "class": "textarea-premium",
                 "placeholder": "Write your notes here...",
                 "id": "id_body_markdown",
                 "rows": 12,
@@ -28,7 +28,7 @@ class NoteForm(forms.ModelForm):
             "is_public": forms.CheckboxInput(attrs={"class": "checkbox"}),
             "youtube_urls": forms.Textarea(
                 attrs={
-                    "class": "textarea",
+                    "class": "textarea-premium",
                     "rows": 3,
                     "placeholder": "Enter YouTube links (one per line or separated by commas)",
                 }

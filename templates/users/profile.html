@@ -1,87 +1,100 @@
-{% extends 'base.html' %}
-
-{% block title %}Profile - ULAB StudyConnect{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Profile — ULAB StudyConnect{% endblock %}
 {% block content %}
-<h1 class="section-title">My Profile</h1>
+<div class="prof-page">
+      <section class="prof-hero" aria-labelledby="prof-name">
+        <div class="prof-hero-bg" aria-hidden="true"></div>
+        <div class="prof-hero-inner">
+          <div class="prof-avatar-wrap">
+            <div class="profile-avatar prof-avatar">{{ user.username|slice:":1"|upper }}</div>
+          </div>
+          <div class="prof-identity">
+            <p class="dash-kicker">Student profile</p>
+            <h2 id="prof-name">{{ user.get_full_name|default:user.username }}</h2>
+            <p>Keep your name, department, and semester up to date so your notes and plans stay correctly attributed.</p>
+            <div class="prof-chips">
+              <span class="badge badge-indigo">CSE</span>
+              <span class="badge badge-cyan">Summer 2026</span>
+              <span class="badge badge-amber">Batch 2022</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
-<div class="grid grid-2">
-    <div class="card">
-        <h2 class="card-title">Personal Information</h2>
-        <form method="post">
-            {% csrf_token %}
+      <div class="prof-layout">
+        <aside class="prof-aside">
+          <div class="prof-card">
+            <h3><i class="fa-solid fa-lock"></i> Account (login)</h3>
+            <p class="prof-aside-note">These credentials are used to sign in. They are not edited from this form.</p>
+            <dl class="prof-dl">
+              <div>
+                <dt>Username</dt>
+                <dd class="prof-mono">{{ user.username }}</dd>
+              </div>
+              <div>
+                <dt>Account email</dt>
+                <dd>{{ user.email|default:"—" }}</dd>
+              </div>
+            </dl>
+          </div>
+          <div class="prof-card prof-links">
+            <h3>Shortcuts</h3>
+            <a href="{% url 'notes:note_list' %}"><i class="fa-solid fa-note-sticky"></i> My notes</a>
+            <a href="{% url 'planner:study_plan_list' %}"><i class="fa-solid fa-list-check"></i> Saved plans</a>
+            <a href="{% url 'forum:feed' %}"><i class="fa-solid fa-comments"></i> Community</a>
+          </div>
+        </aside>
 
-            {% if form.errors %}
-                <div class="alert alert-error">
-                    {% for field in form %}
-                        {% for error in field.errors %}
-                            <p><strong>{{ field.label }}:</strong> {{ error }}</p>
-                        {% endfor %}
-                    {% endfor %}
-                </div>
-            {% endif %}
-
-            <div class="form-group">
-                <label class="form-label" for="id_first_name">First Name</label>
+        <form class="prof-form" method="post">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
+          <div class="prof-card">
+            <h3><i class="fa-solid fa-user"></i> Name &amp; contact</h3>
+            <div class="prof-fields">
+              <div>
+                <label class="label-premium" for="{{ form.first_name.id_for_label }}">First name</label>
                 {{ form.first_name }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="id_last_name">Last Name</label>
+                {{ form.first_name.errors }}
+              </div>
+              <div>
+                <label class="label-premium" for="{{ form.last_name.id_for_label }}">Last name</label>
                 {{ form.last_name }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="id_email">Email</label>
-                {{ form.email }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="id_display_name">Display Name</label>
+                {{ form.last_name.errors }}
+              </div>
+              <div class="prof-span-2">
+                <label class="label-premium" for="{{ form.display_name.id_for_label }}">Display name</label>
                 {{ form.display_name }}
-                <div class="help-text">How others see you in the forum</div>
+                {{ form.display_name.errors }}
+              </div>
+              <div class="prof-span-2">
+                <label class="label-premium" for="{{ form.email.id_for_label }}">Email</label>
+                {{ form.email }}
+                {{ form.email.errors }}
+              </div>
             </div>
+          </div>
 
-            <div class="form-group">
-                <label class="form-label" for="id_department">Department</label>
+          <div class="prof-card">
+            <h3><i class="fa-solid fa-graduation-cap"></i> Academic info</h3>
+            <div class="prof-fields">
+              <div>
+                <label class="label-premium" for="{{ form.department.id_for_label }}">Department</label>
                 {{ form.department }}
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" for="id_semester">Semester</label>
+                {{ form.department.errors }}
+              </div>
+              <div>
+                <label class="label-premium" for="{{ form.semester.id_for_label }}">Semester</label>
                 {{ form.semester }}
+                {{ form.semester.errors }}
+              </div>
             </div>
+          </div>
 
-            <button type="submit" class="btn btn-primary">Save Changes</button>
+          <div class="prof-actions">
+            <a href="{% url 'users:dashboard' %}" class="btn-ghost"><i class="fa-solid fa-arrow-left"></i> Dashboard</a>
+            <button type="submit" class="btn-primary"><span class="btn-shine" aria-hidden="true"></span><span class="btn-label"><i class="fa-solid fa-floppy-disk"></i> Save profile</span></button>
+          </div>
         </form>
+      </div>
     </div>
-
-    <div>
-        <div class="card">
-            <h2 class="card-title">Account Summary</h2>
-            <p class="mb-1"><strong>Username:</strong> {{ user.username }}</p>
-            <p class="mb-1"><strong>Date Joined:</strong> {{ user.date_joined|date:"M d, Y" }}</p>
-            <p class="mb-1"><strong>Last Login:</strong> {{ user.last_login|date:"M d, Y H:i"|default:"First session" }}</p>
-        </div>
-
-        <div class="card">
-            <h2 class="card-title">Quick Links</h2>
-            <div style="display:flex;flex-direction:column;gap:0.5rem;">
-                <a href="{% url 'notes:note_list' %}" class="btn btn-secondary">My Notes</a>
-                <a href="{% url 'forum:feed' %}" class="btn btn-secondary">Forum Posts</a>
-                <a href="{% url 'routines:saved_routine_list' %}" class="btn btn-secondary">Saved Routines</a>
-                <a href="{% url 'planner:study_plan_list' %}" class="btn btn-secondary">Study Plans</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2 class="card-title">Logout</h2>
-            <p class="muted mb-2">Sign out of your ULAB StudyConnect account.</p>
-            <form method="post" action="{% url 'users:logout' %}">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger">Logout</button>
-            </form>
-        </div>
-    </div>
-</div>
 {% endblock %}

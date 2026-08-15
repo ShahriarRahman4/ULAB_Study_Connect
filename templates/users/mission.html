@@ -1,43 +1,253 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
 {% block title %}Our Mission - ULAB StudyConnect{% endblock %}
+{% block main %}
+<main class="flex-grow w-full">
+<section class="hero-ecosystem about-hero" aria-labelledby="mission-heading">
+  <div class="hero-ambient" aria-hidden="true">
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="hero-orb hero-orb-3"></div>
+    <div class="hero-mesh"></div>
+  </div>
 
-{% block content %}
-<div class="card">
-    <h1 class="section-title">Our Mission</h1>
-    <p class="mb-2" style="font-size:1.1rem;">At ULAB StudyConnect, our mission is to transform the academic journey of every ULAB student through technology-driven collaboration and intelligent learning tools.</p>
-</div>
+  <div class="hero-ecosystem-inner">
+    <div class="hero-ecosystem-grid">
 
-<div class="grid grid-3">
-    <div class="card">
-        <h3 class="card-title" style="color:var(--primary);">Collaborate</h3>
-        <p>Break down silos between students by creating a vibrant community where knowledge is freely shared, questions are answered, and peers support each other's growth.</p>
-    </div>
-    <div class="card">
-        <h3 class="card-title" style="color:var(--success);">Organize</h3>
-        <p>Help students manage their academic life effortlessly with centralized notes, exam schedules, and structured study plans tailored to individual needs.</p>
-    </div>
-    <div class="card">
-        <h3 class="card-title" style="color:var(--warning);">Accelerate</h3>
-        <p>Leverage AI-powered tools for text summarization, quiz generation, and smart study planning to help students learn faster and retain more.</p>
-    </div>
-</div>
-
-<div class="card mt-3">
-    <h2 class="card-title">Core Values</h2>
-    <div class="grid grid-2">
-        <div>
-            <h4 style="margin-bottom:0.5rem;">Excellence</h4>
-            <p class="muted mb-2">We are committed to delivering the highest quality tools and experience for academic excellence.</p>
-            <h4 style="margin-bottom:0.5rem;">Inclusivity</h4>
-            <p class="muted mb-2">Every student, regardless of department or semester, deserves equal access to learning resources.</p>
+      <div class="hero-ecosystem-copy">
+        <div class="hero-announce reveal">
+          <span class="hero-announce-pulse" aria-hidden="true"></span>
+          <i class="fa-solid fa-bullseye" aria-hidden="true"></i>
+          <span>Our purpose · ULAB StudyConnect</span>
         </div>
-        <div>
-            <h4 style="margin-bottom:0.5rem;">Innovation</h4>
-            <p class="muted mb-2">We continuously evolve our platform with the latest in AI and edtech to serve students better.</p>
-            <h4 style="margin-bottom:0.5rem;">Community</h4>
-            <p class="muted mb-2">We believe in the power of peer learning and the strength of the ULAB student community.</p>
+
+        <h1 id="mission-heading" class="hero-headline reveal reveal-delay-1">
+          <span class="hero-line hero-line-light">Empower every student</span>
+          <span class="hero-line hero-line-bold">to study smarter,</span>
+          <span class="hero-line hero-line-gradient">together.</span>
+        </h1>
+
+        <p class="hero-desc reveal reveal-delay-2">
+          Intelligent tools and a supportive campus community — so ULAB students can plan better, learn faster, and never face a semester alone.
+        </p>
+
+        <div class="hero-cta-row reveal reveal-delay-3">
+          <a href="{% url 'users:register' %}" class="btn-hero-primary">
+            <span class="btn-hero-shine" aria-hidden="true"></span>
+            <i class="fa-solid fa-rocket" aria-hidden="true"></i>
+            <span>Join the mission</span>
+          </a>
+          <a href="{% url 'users:about' %}" class="btn-hero-secondary">
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+            <span>Back to About</span>
+          </a>
         </div>
+      </div>
+
+      <div class="hero-scene-container reveal reveal-delay-2">
+        <div class="hero-scene" id="hero-scene" aria-hidden="true">
+          <div class="hero-scene-stage" id="hero-scene-stage">
+
+            <div class="hero-hub">
+              <div class="hero-hub-glow"></div>
+              <div class="hero-hub-ring hero-hub-ring-outer"></div>
+              <div class="hero-hub-ring hero-hub-ring-inner"></div>
+              <div class="hero-hub-core">
+                <span class="hero-hub-icon"><i class="fa-solid fa-bullseye"></i></span>
+                <span class="hero-hub-label">Mission</span>
+                <span class="hero-hub-sub">ULAB</span>
+              </div>
+            </div>
+
+            <svg class="hero-connections" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="200" y1="200" x2="80" y2="90" stroke="url(#mission-conn)" stroke-width="1" stroke-dasharray="4 6" opacity="0.5"/>
+              <line x1="200" y1="200" x2="320" y2="100" stroke="url(#mission-conn)" stroke-width="1" stroke-dasharray="4 6" opacity="0.5"/>
+              <line x1="200" y1="200" x2="340" y2="260" stroke="url(#mission-conn)" stroke-width="1" stroke-dasharray="4 6" opacity="0.5"/>
+              <line x1="200" y1="200" x2="70" y2="280" stroke="url(#mission-conn)" stroke-width="1" stroke-dasharray="4 6" opacity="0.5"/>
+              <defs>
+                <linearGradient id="mission-conn" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#4f46e5"/>
+                  <stop offset="100%" stop-color="#06b6d4"/>
+                </linearGradient>
+              </defs>
+            </svg>
+
+            <a href="{% url 'planner:study_planner' %}" class="hero-float-card hero-card-resources">
+              <span class="hero-card-icon" style="background:rgba(79,70,229,0.15);color:#4f46e5;"><i class="fa-solid fa-graduation-cap"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">Excellence</span>
+                <span class="hero-card-meta">Plan · notes · exams</span>
+              </span>
+            </a>
+
+            <a href="{% url 'forum:feed' %}" class="hero-float-card hero-card-forum">
+              <span class="hero-card-icon" style="background:rgba(16,185,129,0.15);color:#059669;"><i class="fa-solid fa-handshake"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">Community</span>
+                <span class="hero-card-meta">Ask · share · support</span>
+              </span>
+            </a>
+
+            <a href="{% url 'notes:public_notes' %}" class="hero-float-card hero-card-planner">
+              <span class="hero-card-icon" style="background:rgba(139,92,246,0.15);color:#7c3aed;"><i class="fa-solid fa-chart-line"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">Growth</span>
+                <span class="hero-card-meta">Habits that stick</span>
+              </span>
+            </a>
+
+            <a href="{% url 'routines:routine_list' %}" class="hero-float-card hero-card-event">
+              <span class="hero-card-icon" style="background:rgba(249,115,22,0.15);color:#ea580c;"><i class="fa-solid fa-calendar-days"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">Routines</span>
+                <span class="hero-card-meta">Official exam dates</span>
+              </span>
+            </a>
+
+            <a href="{% url 'users:team' %}" class="hero-float-card hero-card-ai">
+              <span class="hero-card-icon" style="background:rgba(6,182,212,0.15);color:#0891b2;"><i class="fa-solid fa-users"></i></span>
+              <span class="hero-card-body">
+                <span class="hero-card-title">Student-built</span>
+                <span class="hero-card-meta">Meet the team</span>
+              </span>
+            </a>
+
+            <div class="hero-avatar-orbit">
+              <div class="hero-avatar hero-avatar-1">SR</div>
+              <div class="hero-avatar hero-avatar-2">TT</div>
+              <div class="hero-avatar hero-avatar-3">AA</div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="hero-satellite hero-satellite-online" aria-hidden="true">
+          <span class="hero-sat-dot"></span>
+          <span>Campus-first</span>
+        </div>
+        <div class="hero-satellite hero-satellite-exams" aria-hidden="true">
+          <i class="fa-solid fa-heart"></i>
+          <span>Built for ULAB</span>
+        </div>
+      </div>
+
     </div>
+  </div>
+</section>
+
+<div class="page-wrap">
+
+  <section class="home-section reveal" aria-labelledby="core-heading">
+    <div class="mission-manifesto">
+      <span class="section-label"><i class="fa-solid fa-quote-left"></i> The core mission</span>
+      <h2 id="core-heading">An integrated platform for the whole academic journey.</h2>
+      <p>ULAB StudyConnect exists so students can study smarter, plan better, and connect with peers — without juggling ten tabs, lost PDFs, and group chats that bury the one answer you need.</p>
+    </div>
+  </section>
+
+  <section class="home-section reveal" aria-labelledby="pillars-heading">
+    <div class="home-section-header">
+      <span class="section-label"><i class="fa-solid fa-layer-group"></i> Three pillars</span>
+      <h2 id="pillars-heading" class="home-section-title">How the mission<br><span class="text-gradient">shows up every day</span></h2>
+    </div>
+
+    <div class="about-story-grid">
+      <article class="about-story-card about-story-card-lg">
+        <span class="about-story-num">01</span>
+        <h3>Academic excellence</h3>
+        <p>Intelligent tools for note-taking, study planning, and exam preparation — tuned to real ULAB courses and routines.</p>
+      </article>
+      <article class="about-story-card">
+        <span class="about-story-num">02</span>
+        <h3>Community connection</h3>
+        <p>A place to share knowledge, ask questions, and support each other when the semester gets heavy.</p>
+      </article>
+      <article class="about-story-card">
+        <span class="about-story-num">03</span>
+        <h3>Personal growth</h3>
+        <p>Time management, collaboration habits, and progress tracking that outlast a single exam week.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="home-section reveal" aria-labelledby="deliver-heading">
+    <div class="home-section-header">
+      <span class="section-label"><i class="fa-solid fa-wand-magic-sparkles"></i> In practice</span>
+      <h2 id="deliver-heading" class="home-section-title">Where we deliver</h2>
+    </div>
+    <div class="about-values-grid">
+      <a href="{% url 'routines:routine_list' %}" class="about-value-card mission-link-card">
+        <i class="fa-solid fa-calendar-days"></i>
+        <h3>Exam routines</h3>
+        <p>Official schedules, saved to your planner — not a screenshot in a drive folder.</p>
+        <span class="feature-card-link">Explore routines <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a href="{% url 'notes:public_notes' %}" class="about-value-card mission-link-card">
+        <i class="fa-solid fa-book-open"></i>
+        <h3>Shared notes</h3>
+        <p>Peer resources that stay searchable after the semester ends.</p>
+        <span class="feature-card-link">Browse resources <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+      <a href="{% url 'forum:feed' %}" class="about-value-card mission-link-card">
+        <i class="fa-solid fa-comments"></i>
+        <h3>Student forum</h3>
+        <p>Questions with course context — answers the whole campus can find.</p>
+        <span class="feature-card-link">Join the forum <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+    </div>
+  </section>
+
+  <section class="home-section reveal">
+    <div class="about-mv-grid">
+      <div class="about-tilt-card about-tilt-mission">
+        <div class="about-tilt-shine" aria-hidden="true"></div>
+        <span class="feature-card-icon" style="--fc:#4f46e5;--fc-bg:rgba(79,70,229,0.14);"><i class="fa-solid fa-compass"></i></span>
+        <h3>We believe</h3>
+        <p>Every ULAB student deserves tools that feel premium, stay calm under pressure, and respect how this campus actually works.</p>
+      </div>
+      <a href="{% url 'users:team' %}" class="about-tilt-card about-tilt-vision">
+        <div class="about-tilt-shine" aria-hidden="true"></div>
+        <span class="feature-card-icon" style="--fc:#0891b2;--fc-bg:rgba(6,182,212,0.14);"><i class="fa-solid fa-users"></i></span>
+        <h3>Who carries it</h3>
+        <p>Undergraduate builders who sit the same exams. Meet the people shipping StudyConnect this hackathon.</p>
+        <span class="feature-card-link">Meet the team <i class="fa-solid fa-arrow-right"></i></span>
+      </a>
+    </div>
+  </section>
+
+  <section class="home-section home-cta reveal" aria-labelledby="mission-cta-heading">
+    <div class="home-cta-card">
+      <div class="home-cta-ambient" aria-hidden="true">
+        <div class="home-cta-orb home-cta-orb-1"></div>
+        <div class="home-cta-orb home-cta-orb-2"></div>
+      </div>
+      <div class="home-cta-content">
+        <span class="section-label"><i class="fa-solid fa-rocket"></i> Join us</span>
+        <h2 id="mission-cta-heading" class="home-cta-title">Be part of this<br>mission at ULAB</h2>
+        <p class="home-cta-desc">Create a free account and start with routines, notes, or the forum — whichever you need this week.</p>
+        <div class="home-cta-actions">
+          <a href="{% url 'users:register' %}" class="btn-hero-primary">
+            <span class="btn-hero-shine" aria-hidden="true"></span>
+            <i class="fa-solid fa-rocket"></i>
+            <span>Join now</span>
+          </a>
+          <a href="{% url 'users:login' %}" class="btn-hero-secondary">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            <span>Sign in</span>
+          </a>
+        </div>
+      </div>
+      <div class="home-cta-visual" aria-hidden="true">
+        <div class="home-cta-orbit">
+          <div class="home-cta-orbit-item" style="--i:0;"><i class="fa-solid fa-bullseye"></i></div>
+          <div class="home-cta-orbit-item" style="--i:1;"><i class="fa-solid fa-graduation-cap"></i></div>
+          <div class="home-cta-orbit-item" style="--i:2;"><i class="fa-solid fa-handshake"></i></div>
+          <div class="home-cta-orbit-item" style="--i:3;"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="home-cta-orbit-core"><i class="fa-solid fa-heart"></i></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </div>
+</main>
 {% endblock %}
